@@ -1,4 +1,4 @@
-#include "raylib.h"
+#include <raylib.h>
 #include "rayRPG_boilerplate.h"
 #include "rayRPG_grid_movement.h"
 #define CAMW 200
@@ -22,6 +22,8 @@ int main(){
         TEXTURE_FILTER_POINT,
         &target        
     );
+
+    RRPG_set_grid_side_length(GRID_SIDE);
 
     while(!WindowShouldClose())
     {

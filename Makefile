@@ -1,8 +1,9 @@
 CC = gcc
-CFLAGS = -Iinclude -Wall -Wextra
-LIBS = -Llib -lraylib -lopengl32 -lgdi32 -lwinmm
-SRC = src/main.o
+CFLAGS = -Iinclude -Wall -Wextra $(shell pkg-config --cflags raylib)
+LIBS = $(shell pkg-config --libs raylib) -Llib -lrayrpg -lopengl32 -lgdi32 -lwinmm
 
+
+SRC = src/main.o
 LIBSRC = RRPG_libsrc
 LIB_NAME = librayrpg.a
 LIB_OBJS = $(patsubst $(LIBSRC)/%.c, $(LIBSRC)/%.o, $(wildcard $(LIBSRC)/*.c))
@@ -16,12 +17,14 @@ $(LIBSRC)/%.o: $(LIBSRC)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c $< -o $@  
 
 
 main: $(SRC) lib/$(LIB_NAME)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o main
+	echo $^
+	echo $(LIBS)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o main -Wl,--verbose
 
 clean:
-	rm -rf src/*.o *.exe $(LIBSRC)/*.o $(LIB_NAME)
+	rm -rf src/*.o *.exe $(LIBSRC)/*.o lib/$(LIB_NAME)
 

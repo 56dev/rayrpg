@@ -1,6 +1,6 @@
 #include "rayRPG_boilerplate.h"
-#include "raylib.h"
-#include "raymath.h"
+#include <raylib.h>
+#include <raymath.h>
 
 /*
     Does most of the initialization by itself.
