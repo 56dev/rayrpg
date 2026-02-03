@@ -24,6 +24,7 @@ void RRPG_initialize(
     InitAudioDevice();
 }
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 void RRPG_set_render(
     int camera_width,
     int camera_height

@@ -1,6 +1,11 @@
 #pragma once 
 #include "raylib.h"
 
+/*
+The code for these functions was taken from the basic window and resizable window
+raylib examples.
+*/
+
 void RRPG_initialize(
     const char *title,
     int camera_width,
