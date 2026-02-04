@@ -21,8 +21,6 @@ $(LIBSRC)/%.o: $(LIBSRC)/%.c
 
 
 main: $(SRC) lib/$(LIB_NAME)
-	echo $^
-	echo $(LIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o main -Wl,--verbose
 
 clean:

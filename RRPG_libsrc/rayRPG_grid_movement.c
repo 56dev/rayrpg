@@ -1,18 +1,20 @@
 #include <raylib.h>
 #include "rayRPG_grid_movement.h"
 #include <math.h>
- Vector2Grid DIRECTION_VECTORS[] = {
-    (Vector2Grid){0, -1},
-    (Vector2Grid){1, 0},
-    (Vector2Grid){0, 1},
-    (Vector2Grid){-1, 0},
+#include <raymath.h>
+#include <limits.h>
+ RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[] = {
+    (RRPG_Vector2Grid){0, -1},
+    (RRPG_Vector2Grid){1, 0},
+    (RRPG_Vector2Grid){0, 1},
+    (RRPG_Vector2Grid){-1, 0},
 };
-int GRID_SIDE_LENGTH = 0;
+int RRPG_GRID_SIDE_LENGTH = 0;
 void RRPG_set_grid_side_length(int g)
 {
     static bool has_been_set = false;
     if(!has_been_set) {
-        GRID_SIDE_LENGTH = g;
+        RRPG_GRID_SIDE_LENGTH = g;
         has_been_set = true;
     } else {
         TraceLog(LOG_WARNING, "Did you mean to try to set \
@@ -35,17 +37,17 @@ void RRPG_DEBUG_draw_grid(int grid_side_length, int extent_x, int extent_y)
         }            
 }
 
-Vector2Grid RRPG_raw_pos_to_grid(
+RRPG_Vector2Grid RRPG_raw_pos_to_grid(
     Vector2 raw_pos, 
     int grid_side_length)
 {
     int x = (int)floor(raw_pos.x / grid_side_length);
     int y = (int)floor(raw_pos.y / grid_side_length);
-    return (Vector2Grid){x, y};
+    return (RRPG_Vector2Grid){x, y};
 }
 
 Vector2 RRPG_grid_pos_to_raw(
-    Vector2Grid grid_pos, 
+    RRPG_Vector2Grid grid_pos, 
     int grid_side_length)
 {
     float rx = (float)grid_side_length * ((float)grid_pos.x + 0.5f);
@@ -55,13 +57,25 @@ Vector2 RRPG_grid_pos_to_raw(
 
 void RRPG_position_camera_on_grid(
     Camera2D *camera, 
-    Vector2Grid grid_pos, 
+    RRPG_Vector2Grid grid_pos, 
     int grid_side_length)
 {       
     camera->target = RRPG_grid_pos_to_raw(grid_pos, grid_side_length);
 }
 
-void RRPG_position_camera_on_player(
+void RRPG_PLAYER_constructor(
+    RRPG_PlayerController *player,
+    RRPG_Vector2Grid starting_grid_position,
+    float speed
+){
+    player->position = starting_grid_position;
+    player->sprite_position = RRPG_grid_pos_to_raw(player->position, RRPG_GRID_SIDE_LENGTH);
+    player->facing = DIRECTION_DOWN;
+    player->speed = speed;
+    player->is_moving = false;
+}
+
+void RRPG_PLAYER_position_camera_on_player(
     Camera2D *camera,
     RRPG_PlayerController *player
 )
@@ -69,36 +83,128 @@ void RRPG_position_camera_on_player(
     camera->target = player->sprite_position;
 }
 
-void RRPG_move_player(
-    RRPG_PlayerController *player
+void RRPG_PLAYER_move_player(
+    RRPG_PlayerController *player,
+    int direction
 )
 {
-    static Vector2Grid previous_position = (Vector2Grid){-9999, -9999};
-    previous_position = player->position;
-    player->position = (Vector2Grid){
-        .x = previous_position.x + DIRECTION_VECTORS[player->facing].x,
-        .y = previous_position.y + DIRECTION_VECTORS[player->facing].y};
-    player->sprite_position = RRPG_grid_pos_to_raw(player->position, GRID_SIDE_LENGTH);
+    static RRPG_Vector2Grid previous_position = (RRPG_Vector2Grid){INT_MIN, INT_MIN};
+    static Vector2 next_sprite_position = (Vector2){INFINITY, INFINITY};
+    static bool has_started_moving_sprite = false;
+    static float progress = 0.0f;
+    if(direction >= 0 && direction <= 3) {
+        if(!player->is_moving) {
+            player->is_moving = true;
+            goto SET;
+        }        
+    }
+    if(player->is_moving) {
+        Vector2 previous_sprite_position = RRPG_grid_pos_to_raw(previous_position, 
+            RRPG_GRID_SIDE_LENGTH);        
+            next_sprite_position = RRPG_grid_pos_to_raw(player->position, RRPG_GRID_SIDE_LENGTH);
 
+        progress += player->speed * GetFrameTime();
+        if(progress >= 1.0f) progress = 1.0f;
+
+        player->sprite_position.x = Lerp(
+            previous_sprite_position.x, 
+            next_sprite_position.x, 
+            progress
+        );
+        player->sprite_position.y = Lerp(
+            previous_sprite_position.y, 
+            next_sprite_position.y, 
+            progress
+        );
+
+        if(progress == 1.0f)
+        {
+            if(direction >= 0 && direction <= 3) {
+                goto SET;
+
+            }else {
+                player->is_moving = false;
+                
+            }
+            
+        }
+    }
+    return;
+
+    
+    SET:
+    player->facing = direction;
+    previous_position = player->position;
+    player->position = (RRPG_Vector2Grid){
+    .x = previous_position.x + RRPG_DIRECTION_VECTORS[player->facing].x,
+    .y = previous_position.y + RRPG_DIRECTION_VECTORS[player->facing].y};
+    progress = 0.0f;
+        
+}
+
+
+    
+
+    
+
+
+void __util_push_back(int *a, int n, int insert)
+{
+    for(int i = 0; i < n - 1; ++i)
+    {
+        a[i] = a[i + 1];
+    }
+    a[n - 1] = insert;
+}
+
+void __util_remove(int *a, int n)
+{
+    int i;
+    for(i = 0; i < n; ++i)
+    {
+        if(a[i] == n) {
+            a[i] = -1;
+            break;
+        } 
+    }
     
 }
 
-void RRPG_sense_movement_control(
+int RRPG_PLAYER_sense_movement_control(
+
+) {
+    if(IsKeyDown(KEY_W)) {  
+        return DIRECTION_UP;
+    } else if(IsKeyDown(KEY_A)) {
+        return DIRECTION_LEFT;
+    } else if(IsKeyDown(KEY_S)) {
+        return DIRECTION_DOWN;
+    } else if(IsKeyDown(KEY_D)) {
+        return DIRECTION_RIGHT;
+    } else {
+        return -1;
+    }
+    
+}
+
+void RRPG_PLAYER_DEBUG_dispay_player_info(
     RRPG_PlayerController *player
 ) {
-    if(IsKeyDown(KEY_W)) {
-        player->is_moving = true;
-        player->facing = DIRECTION_UP;
-    } else if(IsKeyDown(KEY_A)) {
-        player->is_moving = true;
-        player->facing = DIRECTION_LEFT;
-    } else if(IsKeyDown(KEY_S)) {
-        player->is_moving = true;
-        player->facing = DIRECTION_DOWN;
-    } else if(IsKeyDown(KEY_D)) {
-        player->is_moving = true;
-        player->facing = DIRECTION_RIGHT;
-    }else {
-        player->is_moving = false;
+    char *text = "";
+    switch(player->facing){
+        case DIRECTION_DOWN:
+        text = "facing down";
+        break;
+        case DIRECTION_LEFT:
+        text = "facing left";
+        break;
+        case DIRECTION_RIGHT:
+        text = "facing right";
+        break;
+        case DIRECTION_UP:
+        text = "facing up";
+        break;
     }
+    DrawText(text, 0, 0, 10, RED);
+    DrawText((player->is_moving ? "is moving" : "is not moving"), 0, 10, 10, RED);
 }
