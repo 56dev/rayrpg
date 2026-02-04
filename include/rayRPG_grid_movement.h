@@ -24,21 +24,21 @@ enum {
 /*
 Goes clockwise. Put the named 
 direction constants into this array to 
-get the corresponding Vector direction.
+get the corresponding vector direction.
 */
 extern RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[];
+
+//The player controller. Handles POSITION and MOVEMENT.
 typedef struct RRPG_PlayerController{
-    RRPG_Vector2Grid position; /*The actual position of the player.
-    This is always set instantly.
-    This is what controls the collision box of the player*/
-    Vector2 sprite_position; /*Where it looks like the player is.
-    This is used to smooth out movement between grid cells.*/
+    RRPG_Vector2Grid position; /*The actual position of the player. This is always set instantly. This is what should control the collision box of the player.*/
+    Vector2 sprite_position; /*Where it looks like the player is. This is used to smooth out movement between grid cells.*/
     int facing; /*What direction the player is facing.*/
-    float speed; /*How fast the player moves between grid cells. Measured in px/sec*/
+    float speed; /*How fast the player moves between grid cells. Measured in px/sec.*/
     bool is_moving; /*Whether the player is currently moving between grid cells.*/
 } RRPG_PlayerController;
 
-void RRPG_set_grid_side_length(int g);
+
+void RRPG_set_grid_side_length(int g); //Sets the grid side length as a global variable. Other functions will need to use that, so remember to call this before doing anything.
 void RRPG_DEBUG_draw_grid(int grid_side_length, int extent_x, int extent_y); //Draws the grid semitransparently
 RRPG_Vector2Grid RRPG_raw_pos_to_grid(Vector2 raw_pos, int grid_side_length); //Converts a raw WORLD position to GRID position.
 Vector2 RRPG_grid_pos_to_raw(RRPG_Vector2Grid grid_pos, int grid_side_length); //Converts a GRID position to raw WORLD position (where new position is perfectly centered on the indicated grid cell).
@@ -47,24 +47,23 @@ void RRPG_position_camera_on_grid(Camera2D *camera, RRPG_Vector2Grid grid_pos, i
 
 /*PLAYER MOVEMENT FUNCTIONS*/
 
-void RRPG_PLAYER_constructor(
+void RRPG_PLAYER_constructor(                   //Initializes the player controller with the proper default values.
     RRPG_PlayerController *player,
     RRPG_Vector2Grid starting_grid_position,
     float speed
 );
 
-int RRPG_PLAYER_sense_movement_control(
 
-);
-void RRPG_PLAYER_position_camera_on_player(
+int RRPG_PLAYER_sense_movement_control();       // Senses keyboard input (WASD). Returns the last input recorded in a static buffer, as a DIRECTION (integer).
+void RRPG_PLAYER_position_camera_on_player(     //Centers the camera onto the player.
     Camera2D *camera,
     RRPG_PlayerController *player
-); //Centers the camera onto the player.
-void RRPG_PLAYER_move_player(
+); 
+void RRPG_PLAYER_move_player(                   //Moves the player in that RPG-like way. 
     RRPG_PlayerController *player,
     int direction
-); //Moves the player in that RPG-like way. 
+); 
 
-void RRPG_PLAYER_DEBUG_dispay_player_info(
+void RRPG_PLAYER_DEBUG_dispay_player_info(      //Displays some player information onto the screen.
     RRPG_PlayerController *player
-); //Displays player information onto the screen.
+); 

@@ -2,9 +2,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
-/*
-    Does most of the initialization by itself.
-*/
+
 void RRPG_initialize(
     const char *title,
     int camera_width, /*Width of the camera in px.*/
@@ -25,7 +23,7 @@ void RRPG_initialize(
 }
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-void RRPG_set_render(
+void RRPG_render_adjust_mouse(
     int camera_width,
     int camera_height
 ){

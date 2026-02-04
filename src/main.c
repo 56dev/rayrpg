@@ -23,13 +23,13 @@ int main(){
         TEXTURE_FILTER_POINT,
         &target        
     );
-
+    
     RRPG_set_grid_side_length(GRID_SIDE);
     RRPG_PlayerController player = {0};
     RRPG_PLAYER_constructor(&player, (RRPG_Vector2Grid){0, 0}, 3.0f);
     while(!WindowShouldClose())
     {
-        RRPG_set_render(CAMW, CAMH);
+        RRPG_render_adjust_mouse(CAMW, CAMH);
         BeginTextureMode(target);
             ClearBackground(RAYWHITE);
             

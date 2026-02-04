@@ -178,6 +178,7 @@ void __util_remove(int *a, int n, int r)
     
 }
 
+
 int RRPG_PLAYER_sense_movement_control(
 
 ) {
