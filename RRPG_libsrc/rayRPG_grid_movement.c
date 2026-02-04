@@ -156,34 +156,55 @@ void __util_push_back(int *a, int n, int insert)
     }
     a[n - 1] = insert;
 }
-
-void __util_remove(int *a, int n)
+/*probably not the loveliest implementation, but whatever*/
+void __util_remove(int *a, int n, int r)
 {
     int i;
     for(i = 0; i < n; ++i)
     {
-        if(a[i] == n) {
-            a[i] = -1;
+        if(a[i] == r) {
+            //push all previous elements forward to fill the space
+            for(; i > 0; --i)
+            {
+                a[i] = a[i - 1];
+            }
+            a[0] = -1;
             break;
         } 
     }
+
+    
+    
     
 }
 
 int RRPG_PLAYER_sense_movement_control(
 
 ) {
-    if(IsKeyDown(KEY_W)) {  
-        return DIRECTION_UP;
-    } else if(IsKeyDown(KEY_A)) {
-        return DIRECTION_LEFT;
-    } else if(IsKeyDown(KEY_S)) {
-        return DIRECTION_DOWN;
-    } else if(IsKeyDown(KEY_D)) {
-        return DIRECTION_RIGHT;
-    } else {
-        return -1;
+    static int buf[4] = { -1, -1, -1, -1 };
+    if(IsKeyPressed(KEY_W)) {  
+        __util_push_back(buf, 4, DIRECTION_UP);
+    }  if(IsKeyPressed(KEY_A)) {
+        __util_push_back(buf, 4, DIRECTION_LEFT);
+    }  if(IsKeyPressed(KEY_S)) {
+        __util_push_back(buf, 4, DIRECTION_DOWN);
+    }  if(IsKeyPressed(KEY_D)) {
+        __util_push_back(buf, 4, DIRECTION_RIGHT);
+    } 
+
+    if(IsKeyReleased(KEY_W)) {
+        __util_remove(buf, 4, DIRECTION_UP);
     }
+    if(IsKeyReleased(KEY_A)) {
+        __util_remove(buf, 4, DIRECTION_LEFT);
+    }
+    if(IsKeyReleased(KEY_S)) {
+        __util_remove(buf, 4, DIRECTION_DOWN);
+    }
+    if(IsKeyReleased(KEY_D)) {
+        __util_remove(buf, 4, DIRECTION_RIGHT);
+    }
+    return buf[3];
     
 }
 

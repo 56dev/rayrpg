@@ -1,8 +1,9 @@
 #include <raylib.h>
 #include "rayRPG_boilerplate.h"
 #include "rayRPG_grid_movement.h"
-#define CAMW 200
-#define CAMH 200
+#include "rayRPG_extra_debug.h"
+#define CAMW 256
+#define CAMH 144
 #define GRID_SIDE 16 //px
 
 int main(){
@@ -17,8 +18,8 @@ int main(){
         "RPG",
         CAMW,
         CAMH,
-        1000,
-        1000,
+        1280,
+        720,
         TEXTURE_FILTER_POINT,
         &target        
     );
@@ -45,6 +46,7 @@ int main(){
             // DrawText(TextFormat("raw: %.2f, %.2f", (mouse_pos.x), (mouse_pos.y)), 0, 0, 10, BLACK);
             // DrawText(TextFormat("grid: %i, %i", (grid_pos.x), (grid_pos.y)), 0, 10, 10, BLACK);
             RRPG_PLAYER_DEBUG_dispay_player_info(&player);
+            RRPG_DEBUG_display_movement_control((Vector2) { 50 , 50 }, 0.5f);
             DrawCircle(CAMW / 2, CAMH / 2, 2, RED);
             
             
