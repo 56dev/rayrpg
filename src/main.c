@@ -25,26 +25,35 @@ int main(){
     );
     
     RRPG_set_grid_side_length(GRID_SIDE);
+    RRPG_Vector2Grid occupied[2] = {
+        (RRPG_Vector2Grid) {0, 1},
+        (RRPG_Vector2Grid) {0, 2},
+    };
+    RRPG_CollisionGrid col_grid = RRPG_initialize_collision_grid(
+        10,
+        10,
+        occupied, 
+        2
+    );
     RRPG_PlayerController player = {0};
-    RRPG_PLAYER_constructor(&player, (RRPG_Vector2Grid){0, 0}, 3.0f);
+    RRPG_PLAYER_constructor(&player, (RRPG_Vector2Grid){0, 0}, 3.0f, col_grid);
+    
     while(!WindowShouldClose())
     {
         RRPG_render_adjust_mouse(CAMW, CAMH);
         BeginTextureMode(target);
             ClearBackground(RAYWHITE);
-            
             BeginMode2D(camera);
                 
                 int d = RRPG_PLAYER_sense_movement_control();
-                RRPG_PLAYER_move_player(&player, d);
+                RRPG_PLAYER_move_player(&player, d, col_grid);
                 RRPG_DEBUG_draw_grid(GRID_SIDE, CAMW, CAMH);
                 RRPG_PLAYER_position_camera_on_player(&camera, &player);
+                RRPG_DEBUG_draw_collision_grid(&col_grid);
             EndMode2D();
             
             Vector2 mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
             RRPG_Vector2Grid grid_pos = RRPG_raw_pos_to_grid(mouse_pos, GRID_SIDE);
-            // DrawText(TextFormat("raw: %.2f, %.2f", (mouse_pos.x), (mouse_pos.y)), 0, 0, 10, BLACK);
-            // DrawText(TextFormat("grid: %i, %i", (grid_pos.x), (grid_pos.y)), 0, 10, 10, BLACK);
             RRPG_PLAYER_DEBUG_dispay_player_info(&player);
             RRPG_DEBUG_display_movement_control((Vector2) { 50 , 50 }, 0.5f);
             DrawCircle(CAMW / 2, CAMH / 2, 2, RED);

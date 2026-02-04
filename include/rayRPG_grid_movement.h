@@ -13,6 +13,12 @@ typedef struct RRPG_Vector2Grid{
     int y; //y component
 } RRPG_Vector2Grid;
 
+/*Describes a collision grid whose top left is at 0, 0.*/
+typedef struct RRPG_CollisionGrid {
+    int *cells; /*Each cell contains an integer. Any number below zero means the cell is occupied by a block or tile. 0 means it is free. Any number above zero indicates the number of entities occupying the cell (these may be temporary).*/
+    int extent_x;
+    int extent_y;
+} RRPG_CollisionGrid;
 
 enum {
     DIRECTION_UP, //1st in the enum (goes clockwise)
@@ -50,7 +56,8 @@ void RRPG_position_camera_on_grid(Camera2D *camera, RRPG_Vector2Grid grid_pos, i
 void RRPG_PLAYER_constructor(                   //Initializes the player controller with the proper default values.
     RRPG_PlayerController *player,
     RRPG_Vector2Grid starting_grid_position,
-    float speed
+    float speed,
+    RRPG_CollisionGrid col_grid
 );
 
 
@@ -61,9 +68,40 @@ void RRPG_PLAYER_position_camera_on_player(     //Centers the camera onto the pl
 ); 
 void RRPG_PLAYER_move_player(                   //Moves the player in that RPG-like way. 
     RRPG_PlayerController *player,
-    int direction
+    int direction,
+    RRPG_CollisionGrid collision_grid
 ); 
 
 void RRPG_PLAYER_DEBUG_dispay_player_info(      //Displays some player information onto the screen.
     RRPG_PlayerController *player
 ); 
+
+/*COLLISION FUNCTIONS*/
+
+
+
+RRPG_CollisionGrid RRPG_initialize_collision_grid(
+    int extent_x, //In # of grid cells, not px.
+    int extent_y,//In # of grid cells, not px.
+    RRPG_Vector2Grid *occupied, //testing
+    int num_occupied
+);
+
+void RRPG_DEBUG_draw_collision_grid(        //Draws the extent of the grid, and colors in black all occupied cells.
+    const RRPG_CollisionGrid *grid
+);
+
+int RRPG_return_collision_state_at_position(    //Returns the collision-state, expressed as an integer, of the current cell. If the cell is outside the collision grid's extents, it returns a very low integer (-9999).
+    RRPG_CollisionGrid grid,
+    RRPG_Vector2Grid cell
+);
+
+void RRPG_add_to_collision_state(
+    RRPG_CollisionGrid *grid,
+    RRPG_Vector2Grid cell
+);
+
+void RRPG_subtract_from_collision_state(
+    RRPG_CollisionGrid *grid,
+    RRPG_Vector2Grid cell
+);

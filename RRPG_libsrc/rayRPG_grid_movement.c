@@ -3,6 +3,8 @@
 #include <math.h>
 #include <raymath.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <stdio.h>
  RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[] = {
     (RRPG_Vector2Grid){0, -1},
     (RRPG_Vector2Grid){1, 0},
@@ -66,13 +68,15 @@ void RRPG_position_camera_on_grid(
 void RRPG_PLAYER_constructor(
     RRPG_PlayerController *player,
     RRPG_Vector2Grid starting_grid_position,
-    float speed
+    float speed,
+    RRPG_CollisionGrid col_grid
 ){
     player->position = starting_grid_position;
     player->sprite_position = RRPG_grid_pos_to_raw(player->position, RRPG_GRID_SIDE_LENGTH);
     player->facing = DIRECTION_DOWN;
     player->speed = speed;
     player->is_moving = false;
+    RRPG_add_to_collision_state(&col_grid, player->position);
 }
 
 void RRPG_PLAYER_position_camera_on_player(
@@ -85,16 +89,18 @@ void RRPG_PLAYER_position_camera_on_player(
 
 void RRPG_PLAYER_move_player(
     RRPG_PlayerController *player,
-    int direction
+    int direction,
+    RRPG_CollisionGrid collision_grid
 )
 {
     static RRPG_Vector2Grid previous_position = (RRPG_Vector2Grid){INT_MIN, INT_MIN};
     static Vector2 next_sprite_position = (Vector2){INFINITY, INFINITY};
-    static bool has_started_moving_sprite = false;
     static float progress = 0.0f;
+
+    
+
     if(direction >= 0 && direction <= 3) {
         if(!player->is_moving) {
-            player->is_moving = true;
             goto SET;
         }        
     }
@@ -133,12 +139,22 @@ void RRPG_PLAYER_move_player(
 
     
     SET:
-    player->facing = direction;
-    previous_position = player->position;
-    player->position = (RRPG_Vector2Grid){
-    .x = previous_position.x + RRPG_DIRECTION_VECTORS[player->facing].x,
-    .y = previous_position.y + RRPG_DIRECTION_VECTORS[player->facing].y};
-    progress = 0.0f;
+        player->facing = direction;
+        previous_position = player->position;
+        progress = 0.0f;
+        
+        RRPG_Vector2Grid np = (RRPG_Vector2Grid){
+        .x = previous_position.x + RRPG_DIRECTION_VECTORS[player->facing].x,
+        .y = previous_position.y + RRPG_DIRECTION_VECTORS[player->facing].y};
+        if(RRPG_return_collision_state_at_position(collision_grid, np) == 0) {
+            player->position = np;
+            RRPG_add_to_collision_state(&collision_grid, np);
+            
+            RRPG_subtract_from_collision_state(&collision_grid, previous_position);
+            player->is_moving = true;
+        }else {
+            player->is_moving = false;
+        }
         
 }
 
@@ -150,8 +166,7 @@ void RRPG_PLAYER_move_player(
 
 void __util_push_back(int *a, int n, int insert)
 {
-    for(int i = 0; i < n - 1; ++i)
-    {
+    for(int i = 0; i < n - 1; ++i) {
         a[i] = a[i + 1];
     }
     a[n - 1] = insert;
@@ -160,12 +175,10 @@ void __util_push_back(int *a, int n, int insert)
 void __util_remove(int *a, int n, int r)
 {
     int i;
-    for(i = 0; i < n; ++i)
-    {
+    for(i = 0; i < n; ++i){
         if(a[i] == r) {
             //push all previous elements forward to fill the space
-            for(; i > 0; --i)
-            {
+            for(; i > 0; --i) {
                 a[i] = a[i - 1];
             }
             a[0] = -1;
@@ -229,4 +242,81 @@ void RRPG_PLAYER_DEBUG_dispay_player_info(
     }
     DrawText(text, 0, 0, 10, RED);
     DrawText((player->is_moving ? "is moving" : "is not moving"), 0, 10, 10, RED);
+}
+
+/*******COLLISIONS*********/
+
+RRPG_CollisionGrid RRPG_initialize_collision_grid(
+    int extent_x, //In # of grid cells, not px.
+    int extent_y,//In # of grid cells, not px.
+    RRPG_Vector2Grid *occupied, //testing
+    int num_occupied
+) {
+    RRPG_CollisionGrid grid = { 0 };
+
+    grid.extent_x = extent_x;
+    grid.extent_y = extent_y;
+    int *cells = malloc(extent_x * extent_y * sizeof(int));
+    // if(!cells) {
+    //     return;
+    // }
+    for(size_t i = 0; i < extent_x * extent_y; ++i) {
+        cells[i] = 0;
+    }
+    for(size_t i = 0; i < num_occupied; ++i) {
+        int idx = occupied[i].y * extent_x + occupied[i].x;
+        if(idx < 0 || idx >= extent_x * extent_y) continue;
+        cells[idx] = -1;
+    }
+    grid.cells = cells;
+    return grid;
+}
+
+void RRPG_DEBUG_draw_collision_grid(
+    const RRPG_CollisionGrid *grid
+) {
+    for(int i = 0; i < grid->extent_x * grid->extent_y; ++i) {
+        if(grid->cells[i] != 0) {
+            RRPG_Vector2Grid cell = (RRPG_Vector2Grid){i % grid->extent_x, (int)floor(i / grid->extent_y)};
+            Vector2 rect_pos = RRPG_grid_pos_to_raw(cell, RRPG_GRID_SIDE_LENGTH);
+            rect_pos.x -= RRPG_GRID_SIDE_LENGTH / 2.0f;
+            rect_pos.y -= RRPG_GRID_SIDE_LENGTH / 2.0f;
+            DrawRectangle(rect_pos.x, rect_pos.y, RRPG_GRID_SIDE_LENGTH, RRPG_GRID_SIDE_LENGTH, (grid->cells[i] < 0 ? BLACK : BLUE));
+        }        
+    }
+    DrawRectangleLines(0, 0, grid->extent_x * RRPG_GRID_SIDE_LENGTH, grid->extent_y * RRPG_GRID_SIDE_LENGTH, RED);
+}
+
+int RRPG_return_collision_state_at_position(
+    RRPG_CollisionGrid grid, 
+    RRPG_Vector2Grid cell) {
+    int idx = cell.y * grid.extent_x + cell.x;
+    if(cell.y < 0 || cell.x < 0 || cell.y >= grid.extent_y || cell.x >= grid.extent_x) return -9999;
+    return grid.cells[idx];
+}
+
+void RRPG_add_to_collision_state(
+    RRPG_CollisionGrid *grid,
+    RRPG_Vector2Grid cell
+) {
+    int idx = cell.y * grid->extent_x + cell.x;
+    if(cell.y < 0 || cell.x < 0 || cell.y >= grid->extent_y || cell.x >= grid->extent_x) return;
+    if(grid->cells[idx] < 0) {
+        TraceLog(LOG_WARNING, "RRPG_add_to_collision_state: why are you trying to add a collider to a cell that is permanently blocked?");
+        return;
+    }
+    ++grid->cells[idx];
+}
+
+void RRPG_subtract_from_collision_state(
+    RRPG_CollisionGrid *grid,
+    RRPG_Vector2Grid cell
+) {
+    int idx = cell.y * grid->extent_x + cell.x;
+    if(cell.y < 0 || cell.x < 0 || cell.y >= grid->extent_y || cell.x >= grid->extent_x) return;
+    if(grid->cells[idx] <= 0) {
+        TraceLog(LOG_WARNING, "RRPG_subtract_to_collision_state: why are you trying to subtract a collider from a cell that is permanently or free?");
+        return;
+    }
+    --grid->cells[idx];
 }
