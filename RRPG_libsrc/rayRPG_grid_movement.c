@@ -87,7 +87,10 @@ void RRPG_PLAYER_position_camera_on_player(
     RRPG_EntityController *player
 )
 {
-    camera->target = player->sprite_position;
+    //camera->target = player->sprite_position;
+    camera->target.x = (int)player->sprite_position.x;
+    camera->target.y = (int)player->sprite_position.y;
+
 }
 
 void RRPG_walk_entity(

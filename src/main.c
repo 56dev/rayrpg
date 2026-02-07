@@ -42,7 +42,8 @@ int main(){
     RRPG_entity_controller_constructor(&player, (RRPG_Vector2Grid){0, 0}, 3.0f, col_grid);
     RRPG_entity_controller_constructor(&npc, (RRPG_Vector2Grid){3, 3}, 3.0f, col_grid);
     float timer = 0.0f;
-
+    Texture2D tex = LoadTexture("sprites/16x16 Idle-Sheet.png");
+    
     while(!WindowShouldClose())
     {
         RRPG_render_adjust_mouse(CAMW, CAMH);
@@ -54,15 +55,15 @@ int main(){
                 RRPG_walk_entity(&player, RRPG_PLAYER_sense_movement_control(), col_grid);
                 RRPG_PLAYER_position_camera_on_player(&camera, &player);
                 RRPG_DEBUG_draw_grid(GRID_SIDE, CAMW, CAMH);
-                //RRPG_DEBUG_draw_collision_grid(&col_grid);
+                RRPG_DEBUG_draw_collision_grid(&col_grid);
                 npc_random_move(&npc, &timer, col_grid);
-                DrawCircle(npc.sprite_position.x, npc.sprite_position.y, 2, BLUE);
+                Vector2 adj = (Vector2) {npc.sprite_position.x - 8, npc.sprite_position.y - 12 - 6};
+                DrawTextureRec(tex, (Rectangle){2, 0, 16, 24}, adj, WHITE);
             EndMode2D();
             
             RRPG_PLAYER_DEBUG_dispay_player_info(&player);
             RRPG_DEBUG_display_movement_control((Vector2) { 50 , 50 }, 0.5f);
-
-            DrawCircle(CAMW / 2, CAMH / 2, 2, RED);
+            DrawTextureRec(tex, (Rectangle){2, 0, 16, 24}, (Vector2){CAMW / 2 - 8, CAMH / 2- 12 - 6}, WHITE);
             
             
 
