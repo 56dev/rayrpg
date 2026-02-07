@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
- RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[] = {
+  RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[] = {
     (RRPG_Vector2Grid){0, -1},
     (RRPG_Vector2Grid){1, 0},
     (RRPG_Vector2Grid){0, 1},
@@ -65,97 +65,114 @@ void RRPG_position_camera_on_grid(
     camera->target = RRPG_grid_pos_to_raw(grid_pos, grid_side_length);
 }
 
-void RRPG_PLAYER_constructor(
-    RRPG_PlayerController *player,
+void RRPG_entity_controller_constructor(
+    RRPG_EntityController *entity,
     RRPG_Vector2Grid starting_grid_position,
     float speed,
     RRPG_CollisionGrid col_grid
 ){
-    player->position = starting_grid_position;
-    player->sprite_position = RRPG_grid_pos_to_raw(player->position, RRPG_GRID_SIDE_LENGTH);
-    player->facing = DIRECTION_DOWN;
-    player->speed = speed;
-    player->is_moving = false;
-    RRPG_add_to_collision_state(&col_grid, player->position);
+    entity->position = starting_grid_position;
+    entity->sprite_position = RRPG_grid_pos_to_raw(entity->position, RRPG_GRID_SIDE_LENGTH);
+    entity->facing = DIRECTION_DOWN;
+    entity->speed = speed;
+    entity->is_moving = false;
+    entity->xxprv_move_progress = 0.0f;
+    entity->xxprv_next_sprite_position = (Vector2){INFINITY, INFINITY};
+    entity->xxprv_previous_position = entity->position;
+    RRPG_add_to_collision_state(&col_grid, entity->position);
 }
 
 void RRPG_PLAYER_position_camera_on_player(
     Camera2D *camera,
-    RRPG_PlayerController *player
+    RRPG_EntityController *player
 )
 {
     camera->target = player->sprite_position;
 }
 
-void RRPG_PLAYER_move_player(
-    RRPG_PlayerController *player,
+void RRPG_walk_entity(
+    RRPG_EntityController *entity,
     int direction,
     RRPG_CollisionGrid collision_grid
 )
 {
-    static RRPG_Vector2Grid previous_position = (RRPG_Vector2Grid){INT_MIN, INT_MIN};
-    static Vector2 next_sprite_position = (Vector2){INFINITY, INFINITY};
-    static float progress = 0.0f;
-
-    
-
+    /*
+        //UNCOMMENT FOR DEBUG
+        Vector2 p = RRPG_grid_pos_to_raw(entity->xxprv_previous_position, RRPG_GRID_SIDE_LENGTH);
+        DrawRectangle(p.x - RRPG_GRID_SIDE_LENGTH / 2, p.y - RRPG_GRID_SIDE_LENGTH / 2, RRPG_GRID_SIDE_LENGTH, RRPG_GRID_SIDE_LENGTH, GREEN);
+    */
     if(direction >= 0 && direction <= 3) {
-        if(!player->is_moving) {
+        if(!entity->is_moving) {
             goto SET;
         }        
     }
-    if(player->is_moving) {
-        Vector2 previous_sprite_position = RRPG_grid_pos_to_raw(previous_position, 
+    if(entity->is_moving) {
+        Vector2 previous_sprite_position = RRPG_grid_pos_to_raw(entity->xxprv_previous_position, 
             RRPG_GRID_SIDE_LENGTH);        
-            next_sprite_position = RRPG_grid_pos_to_raw(player->position, RRPG_GRID_SIDE_LENGTH);
+            entity->xxprv_next_sprite_position = RRPG_grid_pos_to_raw(entity->position, RRPG_GRID_SIDE_LENGTH);
 
-        progress += player->speed * GetFrameTime();
-        if(progress >= 1.0f) progress = 1.0f;
+        entity->xxprv_move_progress += entity->speed * GetFrameTime();
+        if(entity->xxprv_move_progress >= 1.0f) entity->xxprv_move_progress = 1.0f;
 
-        player->sprite_position.x = Lerp(
+        entity->sprite_position.x = Lerp(
             previous_sprite_position.x, 
-            next_sprite_position.x, 
-            progress
+            entity->xxprv_next_sprite_position.x, 
+            entity->xxprv_move_progress
         );
-        player->sprite_position.y = Lerp(
+        entity->sprite_position.y = Lerp(
             previous_sprite_position.y, 
-            next_sprite_position.y, 
-            progress
+            entity->xxprv_next_sprite_position.y, 
+            entity->xxprv_move_progress
         );
 
-        if(progress == 1.0f)
+        if(entity->xxprv_move_progress == 1.0f)
         {
             if(direction >= 0 && direction <= 3) {
                 goto SET;
 
             }else {
-                player->is_moving = false;
-                
-            }
-            
+                entity->is_moving = false;                
+            }            
         }
     }
-    return;
 
-    
+    return;
+   
     SET:
-        player->facing = direction;
-        previous_position = player->position;
-        progress = 0.0f;
+        entity->facing = direction;        
         
         RRPG_Vector2Grid np = (RRPG_Vector2Grid){
-        .x = previous_position.x + RRPG_DIRECTION_VECTORS[player->facing].x,
-        .y = previous_position.y + RRPG_DIRECTION_VECTORS[player->facing].y};
+            .x = entity->position.x + RRPG_DIRECTION_VECTORS[entity->facing].x,
+            .y = entity->position.y + RRPG_DIRECTION_VECTORS[entity->facing].y
+        };
         if(RRPG_return_collision_state_at_position(collision_grid, np) == 0) {
-            player->position = np;
-            RRPG_add_to_collision_state(&collision_grid, np);
             
-            RRPG_subtract_from_collision_state(&collision_grid, previous_position);
-            player->is_moving = true;
+            entity->xxprv_previous_position = entity->position;
+            entity->position = np;
+            entity->xxprv_move_progress = 0.0f;
+            RRPG_add_to_collision_state(&collision_grid, np);            
+            RRPG_subtract_from_collision_state(&collision_grid, entity->xxprv_previous_position);
+            entity->is_moving = true;
+            
         }else {
-            player->is_moving = false;
+            entity->is_moving = false;
         }
         
+}
+
+void RRPG_position_entity(
+    RRPG_EntityController *entity,
+    RRPG_Vector2Grid position,
+    RRPG_CollisionGrid col_grid
+) {
+    RRPG_subtract_from_collision_state(&col_grid, entity->position);
+    entity->position = position;
+    entity->sprite_position = RRPG_grid_pos_to_raw(entity->position, RRPG_GRID_SIDE_LENGTH);
+    entity->is_moving = false;
+    entity->xxprv_move_progress = 0.0f;
+    entity->xxprv_next_sprite_position = (Vector2){INFINITY, INFINITY};
+    entity->xxprv_previous_position = entity->position;
+    RRPG_add_to_collision_state(&col_grid, entity->position);
 }
 
 
@@ -164,7 +181,7 @@ void RRPG_PLAYER_move_player(
     
 
 
-void __util_push_back(int *a, int n, int insert)
+void xxprv_util_push_back(int *a, int n, int insert)
 {
     for(int i = 0; i < n - 1; ++i) {
         a[i] = a[i + 1];
@@ -172,7 +189,7 @@ void __util_push_back(int *a, int n, int insert)
     a[n - 1] = insert;
 }
 /*probably not the loveliest implementation, but whatever*/
-void __util_remove(int *a, int n, int r)
+void xxprv_util_remove(int *a, int n, int r)
 {
     int i;
     for(i = 0; i < n; ++i){
@@ -197,33 +214,33 @@ int RRPG_PLAYER_sense_movement_control(
 ) {
     static int buf[4] = { -1, -1, -1, -1 };
     if(IsKeyPressed(KEY_W)) {  
-        __util_push_back(buf, 4, DIRECTION_UP);
+        xxprv_util_push_back(buf, 4, DIRECTION_UP);
     }  if(IsKeyPressed(KEY_A)) {
-        __util_push_back(buf, 4, DIRECTION_LEFT);
+        xxprv_util_push_back(buf, 4, DIRECTION_LEFT);
     }  if(IsKeyPressed(KEY_S)) {
-        __util_push_back(buf, 4, DIRECTION_DOWN);
+        xxprv_util_push_back(buf, 4, DIRECTION_DOWN);
     }  if(IsKeyPressed(KEY_D)) {
-        __util_push_back(buf, 4, DIRECTION_RIGHT);
+        xxprv_util_push_back(buf, 4, DIRECTION_RIGHT);
     } 
 
     if(IsKeyReleased(KEY_W)) {
-        __util_remove(buf, 4, DIRECTION_UP);
+        xxprv_util_remove(buf, 4, DIRECTION_UP);
     }
     if(IsKeyReleased(KEY_A)) {
-        __util_remove(buf, 4, DIRECTION_LEFT);
+        xxprv_util_remove(buf, 4, DIRECTION_LEFT);
     }
     if(IsKeyReleased(KEY_S)) {
-        __util_remove(buf, 4, DIRECTION_DOWN);
+        xxprv_util_remove(buf, 4, DIRECTION_DOWN);
     }
     if(IsKeyReleased(KEY_D)) {
-        __util_remove(buf, 4, DIRECTION_RIGHT);
+        xxprv_util_remove(buf, 4, DIRECTION_RIGHT);
     }
     return buf[3];
     
 }
 
 void RRPG_PLAYER_DEBUG_dispay_player_info(
-    RRPG_PlayerController *player
+    RRPG_EntityController *player
 ) {
     char *text = "";
     switch(player->facing){
@@ -257,9 +274,9 @@ RRPG_CollisionGrid RRPG_initialize_collision_grid(
     grid.extent_x = extent_x;
     grid.extent_y = extent_y;
     int *cells = malloc(extent_x * extent_y * sizeof(int));
-    // if(!cells) {
-    //     return;
-    // }
+    if(!cells) {
+        return (RRPG_CollisionGrid) { 0 };
+    }
     for(size_t i = 0; i < extent_x * extent_y; ++i) {
         cells[i] = 0;
     }

@@ -1,0 +1,4 @@
+Functions and structs supplied by the library are prefixed with RRPG_. Additional prefixes may further indicate the "namespaces" the function or struct is in.
+Functions are in snake_case, while structs are in PascalCase. 
+Global variables that are constant or only intended to be changed once are SCREAMING_SNAKE_CASE.
+Fields and functions intended to be accessed only by the library are not prefixed with RRPG, but rather with xxprv. 

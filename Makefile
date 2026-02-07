@@ -21,7 +21,7 @@ $(LIBSRC)/%.o: $(LIBSRC)/%.c
 
 
 main: $(SRC) lib/$(LIB_NAME)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o main -Wl,--verbose
+	$(CC) $(CFLAGS) $^ $(LIBS) -o main
 
 clean:
 	rm -rf src/*.o *.exe $(LIBSRC)/*.o lib/$(LIB_NAME)

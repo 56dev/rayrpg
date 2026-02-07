@@ -32,16 +32,20 @@ Goes clockwise. Put the named
 direction constants into this array to 
 get the corresponding vector direction.
 */
-extern RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[];
+extern  RRPG_Vector2Grid RRPG_DIRECTION_VECTORS[];
 
-//The player controller. Handles POSITION and MOVEMENT.
-typedef struct RRPG_PlayerController{
-    RRPG_Vector2Grid position; /*The actual position of the player. This is always set instantly. This is what should control the collision box of the player.*/
-    Vector2 sprite_position; /*Where it looks like the player is. This is used to smooth out movement between grid cells.*/
-    int facing; /*What direction the player is facing.*/
-    float speed; /*How fast the player moves between grid cells. Measured in px/sec.*/
-    bool is_moving; /*Whether the player is currently moving between grid cells.*/
-} RRPG_PlayerController;
+//The entity controller. Handles POSITION and MOVEMENT.
+typedef struct RRPG_EntityController{
+    RRPG_Vector2Grid position; /*The actual position of the entity. This is always set instantly. This is what should control the collision box of the entity.*/
+    Vector2 sprite_position; /*Where it looks like the entity is. This is used to smooth out movement between grid cells.*/
+    int facing; /*What direction the entity is facing.*/
+    float speed; /*How fast the entity moves between grid cells. Measured in px/sec.*/
+    bool is_moving; /*Whether the entity is currently moving between grid cells.*/
+
+    RRPG_Vector2Grid xxprv_previous_position;
+    float xxprv_move_progress;
+    Vector2 xxprv_next_sprite_position;
+} RRPG_EntityController;
 
 
 void RRPG_set_grid_side_length(int g); //Sets the grid side length as a global variable. Other functions will need to use that, so remember to call this before doing anything.
@@ -53,8 +57,8 @@ void RRPG_position_camera_on_grid(Camera2D *camera, RRPG_Vector2Grid grid_pos, i
 
 /*PLAYER MOVEMENT FUNCTIONS*/
 
-void RRPG_PLAYER_constructor(                   //Initializes the player controller with the proper default values.
-    RRPG_PlayerController *player,
+void RRPG_entity_controller_constructor(                   //Initializes the player controller with the proper default values.
+    RRPG_EntityController *player,
     RRPG_Vector2Grid starting_grid_position,
     float speed,
     RRPG_CollisionGrid col_grid
@@ -64,17 +68,24 @@ void RRPG_PLAYER_constructor(                   //Initializes the player control
 int RRPG_PLAYER_sense_movement_control();       // Senses keyboard input (WASD). Returns the last input recorded in a static buffer, as a DIRECTION (integer).
 void RRPG_PLAYER_position_camera_on_player(     //Centers the camera onto the player.
     Camera2D *camera,
-    RRPG_PlayerController *player
+    RRPG_EntityController *player
 ); 
-void RRPG_PLAYER_move_player(                   //Moves the player in that RPG-like way. 
-    RRPG_PlayerController *player,
+void RRPG_walk_entity(                   //Moves the player in that RPG-like way. 
+    RRPG_EntityController *player,
     int direction,
     RRPG_CollisionGrid collision_grid
 ); 
 
+void RRPG_position_entity(
+    RRPG_EntityController *entity,
+    RRPG_Vector2Grid position,
+    RRPG_CollisionGrid col_grid
+);
+
 void RRPG_PLAYER_DEBUG_dispay_player_info(      //Displays some player information onto the screen.
-    RRPG_PlayerController *player
+    RRPG_EntityController *player
 ); 
+
 
 /*COLLISION FUNCTIONS*/
 
