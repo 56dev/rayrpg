@@ -289,6 +289,14 @@ RRPG_CollisionGrid RRPG_initialize_collision_grid(
     return grid;
 }
 
+void RRPG_destroy_collision_grid(
+    RRPG_CollisionGrid *grid
+) {
+    free(grid->cells);
+    grid->extent_x = 0;
+    grid->extent_y = 0;
+}
+
 void RRPG_DEBUG_draw_collision_grid(
     const RRPG_CollisionGrid *grid
 ) {

@@ -36,6 +36,7 @@ int main(){
         occupied, 
         2
     );
+    
     RRPG_EntityController player = {0};
     RRPG_EntityController npc = {0};
     RRPG_entity_controller_constructor(&player, (RRPG_Vector2Grid){0, 0}, 3.0f, col_grid);
@@ -69,7 +70,7 @@ int main(){
 
         RRPG_draw_to_screen(CAMW, CAMH, &target);
     }
-
+    RRPG_destroy_collision_grid(&col_grid);
     RRPG_end(&target);
 
 }

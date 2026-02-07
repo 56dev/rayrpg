@@ -97,6 +97,9 @@ RRPG_CollisionGrid RRPG_initialize_collision_grid(
     RRPG_Vector2Grid *occupied, //testing
     int num_occupied
 );
+void RRPG_destroy_collision_grid(
+    RRPG_CollisionGrid *grid
+);
 
 void RRPG_DEBUG_draw_collision_grid(        //Draws the extent of the grid, and colors in black all occupied cells.
     const RRPG_CollisionGrid *grid
