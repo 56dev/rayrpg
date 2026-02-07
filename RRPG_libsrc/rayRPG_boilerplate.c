@@ -1,7 +1,7 @@
 #include "rayRPG_boilerplate.h"
 #include <raylib.h>
 #include <raymath.h>
-
+#include <time.h>
 
 void RRPG_initialize(
     const char *title,
@@ -20,6 +20,7 @@ void RRPG_initialize(
     *OUT_target = LoadRenderTexture(camera_width, camera_height);
     SetTextureFilter(OUT_target->texture, texture_filter);
     InitAudioDevice();
+    SetRandomSeed(time(NULL));
 }
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 

@@ -3,7 +3,7 @@ CFLAGS = -Iinclude -Wall -Wextra $(shell pkg-config --cflags raylib)
 LIBS = $(shell pkg-config --libs raylib) -Llib -lrayrpg -lopengl32 -lgdi32 -lwinmm
 
 
-SRC = src/main.o
+SRC = src/main.o src/npc.o
 LIBSRC = RRPG_libsrc
 LIB_NAME = librayrpg.a
 LIB_OBJS = $(patsubst $(LIBSRC)/%.c, $(LIBSRC)/%.o, $(wildcard $(LIBSRC)/*.c))

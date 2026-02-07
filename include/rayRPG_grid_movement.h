@@ -70,9 +70,9 @@ void RRPG_PLAYER_position_camera_on_player(     //Centers the camera onto the pl
     Camera2D *camera,
     RRPG_EntityController *player
 ); 
-void RRPG_walk_entity(                   //Moves the player in that RPG-like way. 
+void RRPG_walk_entity(                   //Moves an entity in that RPG-like way. direction_to_move only needs to be set while the entity is staying still: the parameter will then be ignored until the entity reaches the tile it is moving towards.
     RRPG_EntityController *player,
-    int direction,
+    int direction_to_move,
     RRPG_CollisionGrid collision_grid
 ); 
 

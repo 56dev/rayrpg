@@ -2,6 +2,7 @@
 #include "rayRPG_boilerplate.h"
 #include "rayRPG_grid_movement.h"
 #include "rayRPG_extra_debug.h"
+#include "npc.h"
 #define CAMW 256
 #define CAMH 144
 #define GRID_SIDE 16 //px
@@ -36,8 +37,10 @@ int main(){
         2
     );
     RRPG_EntityController player = {0};
+    RRPG_EntityController npc = {0};
     RRPG_entity_controller_constructor(&player, (RRPG_Vector2Grid){0, 0}, 3.0f, col_grid);
-
+    RRPG_entity_controller_constructor(&npc, (RRPG_Vector2Grid){3, 3}, 3.0f, col_grid);
+    float timer = 0.0f;
 
     while(!WindowShouldClose())
     {
@@ -50,17 +53,20 @@ int main(){
                 RRPG_walk_entity(&player, RRPG_PLAYER_sense_movement_control(), col_grid);
                 RRPG_PLAYER_position_camera_on_player(&camera, &player);
                 RRPG_DEBUG_draw_grid(GRID_SIDE, CAMW, CAMH);
-                RRPG_DEBUG_draw_collision_grid(&col_grid);
+                //RRPG_DEBUG_draw_collision_grid(&col_grid);
+                npc_random_move(&npc, &timer, col_grid);
+                DrawCircle(npc.sprite_position.x, npc.sprite_position.y, 2, BLUE);
             EndMode2D();
             
             RRPG_PLAYER_DEBUG_dispay_player_info(&player);
             RRPG_DEBUG_display_movement_control((Vector2) { 50 , 50 }, 0.5f);
+
             DrawCircle(CAMW / 2, CAMH / 2, 2, RED);
             
             
 
         EndTextureMode();
-        
+
         RRPG_draw_to_screen(CAMW, CAMH, &target);
     }
 

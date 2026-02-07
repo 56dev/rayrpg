@@ -92,7 +92,7 @@ void RRPG_PLAYER_position_camera_on_player(
 
 void RRPG_walk_entity(
     RRPG_EntityController *entity,
-    int direction,
+    int direction_to_move,
     RRPG_CollisionGrid collision_grid
 )
 {
@@ -101,7 +101,7 @@ void RRPG_walk_entity(
         Vector2 p = RRPG_grid_pos_to_raw(entity->xxprv_previous_position, RRPG_GRID_SIDE_LENGTH);
         DrawRectangle(p.x - RRPG_GRID_SIDE_LENGTH / 2, p.y - RRPG_GRID_SIDE_LENGTH / 2, RRPG_GRID_SIDE_LENGTH, RRPG_GRID_SIDE_LENGTH, GREEN);
     */
-    if(direction >= 0 && direction <= 3) {
+    if(direction_to_move >= 0 && direction_to_move <= 3) {
         if(!entity->is_moving) {
             goto SET;
         }        
@@ -127,7 +127,7 @@ void RRPG_walk_entity(
 
         if(entity->xxprv_move_progress == 1.0f)
         {
-            if(direction >= 0 && direction <= 3) {
+            if(direction_to_move >= 0 && direction_to_move <= 3) {
                 goto SET;
 
             }else {
@@ -139,7 +139,7 @@ void RRPG_walk_entity(
     return;
    
     SET:
-        entity->facing = direction;        
+        entity->facing = direction_to_move;        
         
         RRPG_Vector2Grid np = (RRPG_Vector2Grid){
             .x = entity->position.x + RRPG_DIRECTION_VECTORS[entity->facing].x,
