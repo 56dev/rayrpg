@@ -19,8 +19,8 @@ int main(){
         "RPG",
         CAMW,
         CAMH,
-        1280,
-        720,
+        CAMW * 4,
+        CAMH * 4,
         TEXTURE_FILTER_POINT,
         &target        
     );
