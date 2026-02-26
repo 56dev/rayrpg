@@ -4,6 +4,7 @@ LIBS = $(shell pkg-config --libs raylib) -Llib -lrayrpg -lopengl32 -lgdi32 -lwin
 
 
 SRC = src/main.o src/npc.o
+TILEMAKER_SRC = src/tilemaker.o
 LIBSRC = RRPG_libsrc
 LIB_NAME = librayrpg.a
 LIB_OBJS = $(patsubst $(LIBSRC)/%.c, $(LIBSRC)/%.o, $(wildcard $(LIBSRC)/*.c))
@@ -22,6 +23,9 @@ $(LIBSRC)/%.o: $(LIBSRC)/%.c
 
 main: $(SRC) lib/$(LIB_NAME)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o main
+
+tilemaker: $(TILEMAKER_SRC) lib/$(LIB_NAME)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o tilemaker
 
 clean:
 	rm -rf src/*.o *.exe $(LIBSRC)/*.o lib/$(LIB_NAME)

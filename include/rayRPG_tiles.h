@@ -18,7 +18,7 @@ typedef struct RRPG_TileSet {
 } RRPG_TileSet;
 
 typedef struct RRPG_Tile {
-    RRPG_TileSet tileset;
+    RRPG_TileSet *tileset;
     RRPG_Vector2Grid tile_position;
     int collision_state;
 } RRPG_Tile;
@@ -32,15 +32,10 @@ typedef struct RRPG_TileMap {
 
 Texture2D RRPGTM_load_atlas(
     const char *path);
-
-void RRPGTM_display_tileset(
-    RRPG_TileSet tileset, 
-    int tile_size, 
-    Camera2D camera);
-
 RRPG_TileSet RRPGTM_create_tileset_from_atlas(
     const char *atlas_path, 
     const char *tileset_path, 
     int tile_size);
-
-void RRPGTM_save_tileset();
+void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_position);
+int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position);
+void RRPGTM_save_tileset(const char *path);
