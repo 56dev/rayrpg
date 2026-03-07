@@ -280,10 +280,10 @@ RRPG_CollisionGrid RRPG_initialize_collision_grid(
     if(!cells) {
         return (RRPG_CollisionGrid) { 0 };
     }
-    for(size_t i = 0; i < extent_x * extent_y; ++i) {
+    for(int i = 0; i < extent_x * extent_y; ++i) {
         cells[i] = 0;
     }
-    for(size_t i = 0; i < num_occupied; ++i) {
+    for(int i = 0; i < num_occupied; ++i) {
         int idx = occupied[i].y * extent_x + occupied[i].x;
         if(idx < 0 || idx >= extent_x * extent_y) continue;
         cells[idx] = -1;

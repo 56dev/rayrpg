@@ -3,12 +3,20 @@
 #include <stdlib.h>
 #include "rayRPG_boilerplate.h"
 #include "rayRPG_tiles.h"
+
+#define RAYGUI_IMPLEMENTATION
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+    #include "raygui.h" 
+#pragma GCC diagnostic pop
+
 #define CAMW 256*6
 #define CAMH 144*6
 
 void mouse_gestures(Camera2D *camera, RRPG_TileSet tileset);
-void tile_panel(RRPG_Tile *tile);
-void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camera, int mode, RRPG_Tile **OUT_tile_selected);
+void tile_panel(RRPG_TileSet tileset, RRPG_Vector2Grid position);
+void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camera, int mode, RRPG_Vector2Grid *OUT_tile_position_selected);
 
 enum {
     MODE_SELECTION,
@@ -37,7 +45,8 @@ int main() {
     //Texture2D atlas = RRPGTM_load_atlas("sprites/atlases/Sprite-0001.png");
     RRPG_TileSet tileset = RRPGTM_create_tileset_from_atlas("sprites/atlases/Sprite-0001.png", "data/tilesets/test.rrpgatl", 16);
     int mode = MODE_SELECTION;
-    RRPG_Tile *tile_selected = NULL;
+    RRPG_Vector2Grid tile_selected = (RRPG_Vector2Grid){-1, -1};
+    
     while(!WindowShouldClose()) {
         RRPG_render_adjust_mouse(CAMW, CAMH);
 
@@ -52,7 +61,7 @@ int main() {
             BeginMode2D(camera);
                 RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
             EndMode2D();
-            tile_panel(tile_selected);
+            tile_panel(tileset, tile_selected);
         EndTextureMode();
 
         RRPG_draw_to_screen(CAMW, CAMH, &target);
@@ -91,12 +100,12 @@ void mouse_gestures(Camera2D *camera, RRPG_TileSet tileset) {
 
     camera->zoom = Clamp(camera->zoom, 2.0f, 18.0f);
 }
-void tile_panel(RRPG_Tile *tile) {
+void tile_panel(RRPG_TileSet tileset, RRPG_Vector2Grid position) {
     
     Rectangle panel = (Rectangle) {
         0, 0, CAMW * 5/16, CAMH
     };
-    DrawRectangleRec(panel, GRAY);
+    DrawRectangleRec(panel, BEIGE);
     float line_thick = 10.0f;
     DrawLineEx((Vector2){panel.width + line_thick/2, 0}, (Vector2){panel.width + line_thick/2, panel.height}, line_thick, BLACK);
 
@@ -105,15 +114,21 @@ void tile_panel(RRPG_Tile *tile) {
     //DrawRectangleLines(panel.x + margin_thickness, panel.y + margin_thickness, panel.width - margin_thickness*2, panel.height - margin_thickness*2, RED);
     Rectangle content_rect = (Rectangle) {panel.x + margin_thickness, panel.y + margin_thickness, panel.width - margin_thickness*2, panel.height - margin_thickness*2};
     float font_size = 50.0f;
-    if(tile == NULL) {
+    int tile_idx = RRPGTM_find_position_in_tileset(tileset, position);
+    if(tile_idx < 0) {
         DrawText("No tile selected.", content_rect.x, content_rect.y + font_size*3, font_size, DARKGRAY);
         return;
     }
+    RRPG_Tile *tile = &(tileset.tiles[tile_idx]);
     DrawText(TextFormat("x: %i, y: %i", tile->tile_position.x, tile->tile_position.y), content_rect.x, content_rect.y + font_size*0, font_size, DARKGRAY);
-    DrawText(TextFormat("collision state: %i", tile->collision_state), content_rect.x, content_rect.y + font_size*1, font_size, DARKGRAY);
+    int o = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, font_size);
+        GuiCheckBox((Rectangle){content_rect.x, content_rect.y + font_size*1, font_size, font_size}, "lol", &(tile->entities_can_pass));
+    GuiSetStyle(DEFAULT, TEXT_SIZE, o);
+    //DrawText(TextFormat("collision state: %i", tile->entities_can_pass), content_rect.x, content_rect.y + font_size*1, font_size, DARKGRAY);
     
 }
-void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camera, int mode, RRPG_Tile **OUT_tile_selected) {
+void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camera, int mode, RRPG_Vector2Grid *OUT_tile_position_selected) {
     DrawTextureEx(tileset->atlas, (Vector2){0, 0}, 0, 1.0f, WHITE);
     
     Vector2 mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
@@ -133,7 +148,7 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
         }
     }    
 
-    float line_thick = 1.0f;
+    float line_thick = 0.5f;
     DrawRectangleLinesEx((Rectangle){-line_thick, -line_thick, tileset->atlas.width + line_thick*2, tileset->atlas.height + line_thick*2}, line_thick, BLACK);
     if(mouse_pos.x < 0 || mouse_pos.x > tileset->atlas.width) { return; }
     if(mouse_pos.y < 0 || mouse_pos.y > tileset->atlas.height) { return; }
@@ -143,6 +158,7 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
     };
     Color selection_color = GRAY;
     selection_color.a = 120;
+
     DrawRectangle(tile_pos.x * tile_size, tile_pos.y * tile_size, tile_size, tile_size, selection_color);
     if(mode == MODE_CREATION) {
         if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -155,9 +171,8 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
         if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             
             int idx = RRPGTM_find_position_in_tileset(*tileset, (RRPG_Vector2Grid){tile_pos.x, tile_pos.y});
-            TraceLog(LOG_INFO, "%i", idx);
             if(idx >= 0) {
-                *OUT_tile_selected = &(tileset->tiles[idx]);
+                *OUT_tile_position_selected = tileset->tiles[idx].tile_position;
             }
         } 
     }

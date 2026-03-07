@@ -36,7 +36,8 @@ void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_pos
     tileset->tiles[tileset->count] = (RRPG_Tile) {
         .tileset = tileset,
         .tile_position = tile_position,
-        .collision_state = 0,
+        .entities_can_pass = false,
+
     };
     ++tileset->count;
 

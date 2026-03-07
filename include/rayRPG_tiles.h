@@ -7,8 +7,8 @@ struct RRPG_Tile;
 
 typedef struct RRPG_TileSet {
 //public:
-    char *tileset_path;
-    char *atlas_path;
+    const char *tileset_path;
+    const char *atlas_path;
     Texture2D atlas;
     int tile_size;
     int count;
@@ -20,7 +20,7 @@ typedef struct RRPG_TileSet {
 typedef struct RRPG_Tile {
     RRPG_TileSet *tileset;
     RRPG_Vector2Grid tile_position;
-    int collision_state;
+    bool entities_can_pass;
 } RRPG_Tile;
 
 typedef struct RRPG_TileMap {
