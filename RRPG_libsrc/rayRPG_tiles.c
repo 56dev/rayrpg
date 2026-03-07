@@ -13,6 +13,23 @@ Texture2D RRPGTM_load_atlas(const char *path) {
     return tex;
 }
 
+void RRPGTM_display_tile_texture(RRPG_Tile tile, Rectangle dest_rect) {
+    Texture2D atlas = tile.tileset->atlas;
+    int ts = tile.tileset->tile_size;
+    Rectangle source = (Rectangle){tile.tile_position.x * ts, 
+                tile.tile_position.y * ts, 
+                ts, 
+                ts};
+    if(dest_rect.height <= 0 || dest_rect.width <= 0) {
+        DrawTextureRec(atlas, 
+           source, 
+           (Vector2){dest_rect.x, dest_rect.y},
+        WHITE);
+    } else {
+        DrawTexturePro(atlas, source, dest_rect, Vector2Zero(), 0.0f, WHITE);
+    }
+    
+}
 RRPG_TileSet RRPGTM_create_tileset_from_atlas(const char *atlas_path, const char *tileset_path, int tile_size) {
     return (RRPG_TileSet) {
         .atlas_path = atlas_path,

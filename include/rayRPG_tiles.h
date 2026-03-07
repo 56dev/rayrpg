@@ -39,3 +39,4 @@ RRPG_TileSet RRPGTM_create_tileset_from_atlas(
 void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_position);
 int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position);
 void RRPGTM_save_tileset(const char *path);
+void RRPGTM_display_tile_texture(RRPG_Tile tile, Rectangle dest_rect); //passing in a display_rect with zero width/height makes the function display the texture with the default tile dimensions

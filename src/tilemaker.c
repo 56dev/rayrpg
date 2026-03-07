@@ -128,6 +128,12 @@ void tile_panel(RRPG_TileSet tileset, RRPG_Vector2Grid position) {
     GuiSetStyle(DEFAULT, TEXT_SIZE, font_size);
         GuiCheckBox((Rectangle){content_rect.x, content_rect.y + font_size*1, font_size, font_size}, "lol", &(tile->entities_can_pass));
     GuiSetStyle(DEFAULT, TEXT_SIZE, o);
+    DrawRectangle(content_rect.x, content_rect.y + font_size*2 + 5,
+        content_rect.width, content_rect.width, WHITE);
+    RRPGTM_display_tile_texture(*tile, (Rectangle){
+        content_rect.x, content_rect.y + font_size*2 + 5,
+        content_rect.width, content_rect.width
+   });
     //DrawText(TextFormat("collision state: %i", tile->entities_can_pass), content_rect.x, content_rect.y + font_size*1, font_size, DARKGRAY);
     
 }
