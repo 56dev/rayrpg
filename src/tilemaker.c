@@ -19,8 +19,8 @@ void tile_panel(RRPG_TileSet tileset, RRPG_Vector2Grid position);
 void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camera, int mode, RRPG_Vector2Grid *OUT_tile_position_selected);
 
 enum {
-    MODE_SELECTION,
-    MODE_CREATION
+    MODE_CREATION,
+    MODE_SELECTION
 };
 
 int main() {
@@ -51,12 +51,15 @@ int main() {
         RRPG_render_adjust_mouse(CAMW, CAMH);
 
         mouse_gestures(&camera, tileset);
+
+        
         if(IsKeyPressed(KEY_ONE)) {
             mode = MODE_CREATION;
         } else if (IsKeyPressed(KEY_TWO)) {
             mode = MODE_SELECTION;
         }
         BeginTextureMode(target);
+            GuiToggleGroup((Rectangle){CAMW - 250, 0, 100, 100}, "CREATE TILE;SELECT TILE", &mode);
             ClearBackground(RAYWHITE);
             BeginMode2D(camera);
                 RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
