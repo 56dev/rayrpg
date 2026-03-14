@@ -73,16 +73,19 @@ int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_
 
 void RRPGTM_remove_tile_from_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position) {
     int i = 0;
+    bool found = false;
     for(; i < tileset.count; ++i) {
-        if(tileset.tiles[i].tile_position.x == tile_position.x && 
-            tileset.tiles[i].tile_position.y == tile_position.y) {
-            break;
-        }
+        if(tileset.tiles[i].tile_position.x == tile_position.x && tileset.tiles[i].tile_position.y == tile_position.y) { 
+		found = true;
+		break;
+	}
     }
     for(; i < tileset.count - 1; ++i) {
         tileset.tiles[i] = tileset.tiles[i + 1];
     }
-    --tileset.count;
+    if(found) {
+	 --tileset.count;
+	}
 }
 
 

@@ -20,7 +20,8 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
 
 enum {
     MODE_CREATION,
-    MODE_SELECTION
+    MODE_SELECTION,
+    MODE_DELETION
 };
 
 int main() {
@@ -59,7 +60,7 @@ int main() {
             mode = MODE_SELECTION;
         }
         BeginTextureMode(target);
-            GuiToggleGroup((Rectangle){CAMW - 250, 0, 100, 100}, "CREATE TILE;SELECT TILE", &mode);
+            GuiToggleGroup((Rectangle){CAMW - 250, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
             ClearBackground(RAYWHITE);
             BeginMode2D(camera);
                 RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
@@ -184,5 +185,18 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
                 *OUT_tile_position_selected = tileset->tiles[idx].tile_position;
             }
         } 
+    } else if(mode == MODE_DELETION) {
+   	if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            int idx = RRPGTM_find_position_in_tileset(*tileset, (RRPG_Vector2Grid){tile_pos.x, tile_pos.y});
+	
+            if(idx >= 0) {
+	    	if(OUT_tile_position_selected->x == tileset->tiles[idx].tile_position.x && 
+		OUT_tile_position_selected->y == tileset->tiles[idx].tile_position.y) {
+			*OUT_tile_position_selected = (RRPG_Vector2Grid){-1, -1};
+		}
+		RRPGTM_remove_tile_from_tileset(*tileset, tileset->tiles[idx].tile_position);
+	    }
+	}
+    	
     }
 }
