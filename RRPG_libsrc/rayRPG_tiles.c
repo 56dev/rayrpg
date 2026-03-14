@@ -27,6 +27,7 @@ void RRPGTM_display_tile_texture(RRPG_Tile tile, Rectangle dest_rect) {
         WHITE);
     } else {
         DrawTexturePro(atlas, source, dest_rect, Vector2Zero(), 0.0f, WHITE);
+        
     }
     
 }

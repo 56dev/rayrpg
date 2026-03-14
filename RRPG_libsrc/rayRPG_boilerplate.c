@@ -38,7 +38,7 @@ void RRPG_render_adjust_mouse(
         (Vector2){0, 0}, 
         (Vector2){ 
             (float)camera_width, 
-            (float)camera_height} 
+            (float)camera_height}
         );
     SetMouseOffset((-(GetScreenWidth() - (camera_width*scale))*0.5f),
                 (-(GetScreenHeight() - (camera_height*scale))*0.5f));
