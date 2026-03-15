@@ -44,7 +44,7 @@ int main() {
     );
 
     //Texture2D atlas = RRPGTM_load_atlas("sprites/atlases/Sprite-0001.png");
-    RRPG_TileSet tileset = RRPGTM_create_tileset_from_atlas("sprites/atlases/Sprite-0001.png", "data/tilesets/test.rrpgatl", 16);
+    RRPG_TileSet tileset = RRPGTM_create_tileset_from_atlas("sprites/atlases/Sprite-0001.png", "data/tilesets/test.rrpgts", 16);
     int mode = MODE_SELECTION;
     RRPG_Vector2Grid tile_selected = (RRPG_Vector2Grid){-1, -1};
     
@@ -70,6 +70,7 @@ int main() {
 
         RRPG_draw_to_screen(CAMW, CAMH, &target);
     }
+    RRPGTM_save_tileset(tileset);
     RRPG_end(&target);
 }
 

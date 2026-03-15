@@ -1,4 +1,8 @@
 *.exe
 *.o
+*.rrpgts
+
 lib/librayrpg.a
 tags
+data
+

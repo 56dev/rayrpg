@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 
 Texture2D RRPGTM_load_atlas(const char *path) {
     Texture2D tex = LoadTexture(path);
@@ -84,6 +84,24 @@ int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_
     return -1;
 }
 
-void RRPGTM_save_tileset(const char *path) {
+bool RRPGTM_save_tileset(RRPG_TileSet tileset){
+    FILE *fptr = fopen(tileset.tileset_path, "w");
+    if(!fptr) {
+        return false;
+    }
+    fprintf(fptr, "TILE_SIZE %i\n", tileset.tile_size);
+    fprintf(fptr, "COUNT %i\n", tileset.count);
+    fprintf(fptr, "PATH %s\n", tileset.atlas_path);
+    for(int i = 0; i < tileset.count; ++i) {
+        RRPG_Tile *tile = &(tileset.tiles[i]);
+        fprintf(fptr, "IDX %i\n", i);
+        fprintf(fptr, "POS %i %i\n", tile->tile_position.x, tile->tile_position.y);
+        fprintf(fptr, "CAN_PASS %i\n", (tile->entities_can_pass ? 1 : 0));        
+    }
+    fclose(fptr);
+    return true;
+    
 
 }
+
+
