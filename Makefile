@@ -24,8 +24,8 @@ $(LIBSRC)/%.o: $(LIBSRC)/%.c
 main: $(SRC) lib/$(LIB_NAME)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o main
 
-tilemaker: $(TILEMAKER_SRC) lib/$(LIB_NAME)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o tilemaker
+tm: $(TILEMAKER_SRC) lib/$(LIB_NAME)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o tm
 
 clean:
 	rm -rf src/*.o *.exe $(LIBSRC)/*.o lib/$(LIB_NAME)
