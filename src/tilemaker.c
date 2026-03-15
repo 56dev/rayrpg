@@ -60,8 +60,8 @@ int main() {
             mode = MODE_SELECTION;
         }
         BeginTextureMode(target);
-            GuiToggleGroup((Rectangle){CAMW - 250, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
             ClearBackground(RAYWHITE);
+            GuiToggleGroup((Rectangle){CAMW - 300, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
             BeginMode2D(camera);
                 RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
             EndMode2D();
@@ -104,6 +104,9 @@ void mouse_gestures(Camera2D *camera, RRPG_TileSet tileset) {
 
     camera->zoom = Clamp(camera->zoom, 2.0f, 18.0f);
 }
+
+
+
 void tile_panel(RRPG_TileSet tileset, RRPG_Vector2Grid position) {
     
     Rectangle panel = (Rectangle) {
@@ -138,6 +141,8 @@ void tile_panel(RRPG_TileSet tileset, RRPG_Vector2Grid position) {
     //DrawText(TextFormat("collision state: %i", tile->entities_can_pass), content_rect.x, content_rect.y + font_size*1, font_size, DARKGRAY);
     
 }
+
+
 void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camera, int mode, RRPG_Vector2Grid *OUT_tile_position_selected) {
     DrawTextureEx(tileset->atlas, (Vector2){0, 0}, 0, 1.0f, WHITE);
     
@@ -186,17 +191,17 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
             }
         } 
     } else if(mode == MODE_DELETION) {
-   	if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             int idx = RRPGTM_find_position_in_tileset(*tileset, (RRPG_Vector2Grid){tile_pos.x, tile_pos.y});
-	
-            if(idx >= 0) {
-	    	if(OUT_tile_position_selected->x == tileset->tiles[idx].tile_position.x && 
-		OUT_tile_position_selected->y == tileset->tiles[idx].tile_position.y) {
-			*OUT_tile_position_selected = (RRPG_Vector2Grid){-1, -1};
-		}
-		RRPGTM_remove_tile_from_tileset(*tileset, tileset->tiles[idx].tile_position);
-	    }
-	}
-    	
+    
+        if(idx >= 0) {
+        if(OUT_tile_position_selected->x == tileset->tiles[idx].tile_position.x && 
+        OUT_tile_position_selected->y == tileset->tiles[idx].tile_position.y) {
+            *OUT_tile_position_selected = (RRPG_Vector2Grid){-1, -1};
+        }
+        RRPGTM_remove_tile_from_tileset(*tileset, tileset->tiles[idx].tile_position);
+        }
+    }
+        
     }
 }
