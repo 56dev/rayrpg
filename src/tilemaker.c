@@ -92,7 +92,7 @@ void mouse_gestures(Camera2D *camera, RRPG_TileSet tileset) {
     }
     camera->target = Vector2Clamp(
         camera->target, 
-        (Vector2){0, 0},
+        (Vector2){-20, 0 },
         (Vector2){tileset.atlas.width, tileset.atlas.height});
 
     float wheel = GetMouseWheelMove();
@@ -191,16 +191,16 @@ void RRPGTM_display_tileset(RRPG_TileSet *tileset, int tile_size, Camera2D camer
             }
         } 
     } else if(mode == MODE_DELETION) {
-    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             int idx = RRPGTM_find_position_in_tileset(*tileset, (RRPG_Vector2Grid){tile_pos.x, tile_pos.y});
-    
-        if(idx >= 0) {
-        if(OUT_tile_position_selected->x == tileset->tiles[idx].tile_position.x && 
-        OUT_tile_position_selected->y == tileset->tiles[idx].tile_position.y) {
-            *OUT_tile_position_selected = (RRPG_Vector2Grid){-1, -1};
-        }
-        RRPGTM_remove_tile_from_tileset(*tileset, tileset->tiles[idx].tile_position);
-        }
+        
+            if(idx >= 0) {
+                if(OUT_tile_position_selected->x == tileset->tiles[idx].tile_position.x && 
+                    OUT_tile_position_selected->y == tileset->tiles[idx].tile_position.y) {
+                    *OUT_tile_position_selected = (RRPG_Vector2Grid){-1, -1};
+                }
+                RRPGTM_remove_tile_from_tileset(tileset, tileset->tiles[idx].tile_position);
+            }
     }
         
     }

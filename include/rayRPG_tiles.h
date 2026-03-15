@@ -40,4 +40,4 @@ void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_pos
 int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position);
 void RRPGTM_save_tileset(const char *path);
 void RRPGTM_display_tile_texture(RRPG_Tile tile, Rectangle dest_rect); //passing in a display_rect with zero width/height makes the function display the texture with the default tile dimensions
-void RRPGTM_remove_tile_from_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position);
+void RRPGTM_remove_tile_from_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_position);

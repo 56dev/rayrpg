@@ -61,6 +61,19 @@ void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_pos
 
 }
 
+
+void RRPGTM_remove_tile_from_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_position) {
+    int i = RRPGTM_find_position_in_tileset(*tileset, tile_position);
+    if(i < 0) {
+        return;
+    }
+    for(; i < tileset->count - 1; ++i) {
+        tileset->tiles[i] = tileset->tiles[i + 1];
+    }
+    --(tileset->count);
+}
+
+
 int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position) {
     for(int i = 0; i < tileset.count; i++) {
         if((tileset.tiles[i].tile_position.x == tile_position.x) && 
@@ -70,25 +83,6 @@ int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_
     }
     return -1;
 }
-
-void RRPGTM_remove_tile_from_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position) {
-    int i = 0;
-    bool found = false;
-    for(; i < tileset.count; ++i) {
-        if(tileset.tiles[i].tile_position.x == tile_position.x && tileset.tiles[i].tile_position.y == tile_position.y) { 
-		found = true;
-		break;
-	}
-    }
-    for(; i < tileset.count - 1; ++i) {
-        tileset.tiles[i] = tileset.tiles[i + 1];
-    }
-    if(found) {
-	 --tileset.count;
-	}
-}
-
-
 
 void RRPGTM_save_tileset(const char *path) {
 
