@@ -4,7 +4,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <string.h>
 Texture2D RRPGTM_load_atlas(const char *path) {
     Texture2D tex = LoadTexture(path);
     if(tex.id == 0) {
@@ -13,6 +13,63 @@ Texture2D RRPGTM_load_atlas(const char *path) {
     return tex;
 }
 
+RRPG_TileSet RRPGTM_create_tileset_from_atlas(const char *atlas_path, const char *tileset_path, int tile_size) {
+    return (RRPG_TileSet) {
+        .atlas_path = atlas_path,
+        .tileset_path = tileset_path,
+        .tile_size = tile_size,
+        .atlas = RRPGTM_load_atlas(atlas_path),
+        .count = 0,
+        .tiles = MemAlloc(sizeof(RRPG_Tile)),
+        
+        .xxprv_capacity = sizeof(RRPG_Tile),
+    };
+}
+RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
+    FILE *fptr = fopen(tileset_path, "r");
+    if(!fptr) {
+        *success = false;
+        return (RRPG_TileSet){0};
+    }
+    int cur_work_idx = -1;
+    char buf[100];
+    RRPG_TileSet tileset = (RRPG_TileSet){0};
+    while(fgets(buf, 100, fptr)) {
+        if(ferror(fptr)) {
+            *success = false;
+            return (RRPG_TileSet){0};
+        }
+        char *tok = strtok(buf, " ");
+        void *o = NULL;
+        while(tok != NULL) {
+           if(o == NULL) {
+           if(strcmp(tok, "TILE_SIZE")) {
+                o = &tileset.tile_size;
+           }
+           
+           } 
+            tok = strtok(NULL, " ");
+        }
+    }
+    *success = true;
+}
+bool RRPGTM_save_tileset(RRPG_TileSet tileset){
+    FILE *fptr = fopen(tileset.tileset_path, "w");
+    if(!fptr) {
+        return false;
+    }
+    fprintf(fptr, "TILE_SIZE %i\n", tileset.tile_size);
+    fprintf(fptr, "COUNT %i\n", tileset.count);
+    fprintf(fptr, "PATH %s\n", tileset.atlas_path);
+    for(int i = 0; i < tileset.count; ++i) {
+        RRPG_Tile *tile = &(tileset.tiles[i]);
+        fprintf(fptr, "IDX %i\n", i);
+        fprintf(fptr, "POS %i %i\n", tile->tile_position.x, tile->tile_position.y);
+        fprintf(fptr, "CAN_PASS %i\n", (tile->entities_can_pass ? 1 : 0));        
+    }
+    fclose(fptr);
+    return true;
+}
 void RRPGTM_display_tile_texture(RRPG_Tile tile, Rectangle dest_rect) {
     Texture2D atlas = tile.tileset->atlas;
     int ts = tile.tileset->tile_size;
@@ -31,18 +88,7 @@ void RRPGTM_display_tile_texture(RRPG_Tile tile, Rectangle dest_rect) {
     }
     
 }
-RRPG_TileSet RRPGTM_create_tileset_from_atlas(const char *atlas_path, const char *tileset_path, int tile_size) {
-    return (RRPG_TileSet) {
-        .atlas_path = atlas_path,
-        .tileset_path = tileset_path,
-        .tile_size = tile_size,
-        .atlas = RRPGTM_load_atlas(atlas_path),
-        .count = 0,
-        .tiles = MemAlloc(sizeof(RRPG_Tile)),
-        
-        .xxprv_capacity = sizeof(RRPG_Tile),
-    };
-}
+
 
 void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_position) {
 
@@ -82,26 +128,6 @@ int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_
         }
     }
     return -1;
-}
-
-bool RRPGTM_save_tileset(RRPG_TileSet tileset){
-    FILE *fptr = fopen(tileset.tileset_path, "w");
-    if(!fptr) {
-        return false;
-    }
-    fprintf(fptr, "TILE_SIZE %i\n", tileset.tile_size);
-    fprintf(fptr, "COUNT %i\n", tileset.count);
-    fprintf(fptr, "PATH %s\n", tileset.atlas_path);
-    for(int i = 0; i < tileset.count; ++i) {
-        RRPG_Tile *tile = &(tileset.tiles[i]);
-        fprintf(fptr, "IDX %i\n", i);
-        fprintf(fptr, "POS %i %i\n", tile->tile_position.x, tile->tile_position.y);
-        fprintf(fptr, "CAN_PASS %i\n", (tile->entities_can_pass ? 1 : 0));        
-    }
-    fclose(fptr);
-    return true;
-    
-
 }
 
 

@@ -42,34 +42,83 @@ int main() {
         TEXTURE_FILTER_POINT,
         &target
     );
-
-    //Texture2D atlas = RRPGTM_load_atlas("sprites/atlases/Sprite-0001.png");
-    RRPG_TileSet tileset = RRPGTM_create_tileset_from_atlas("sprites/atlases/Sprite-0001.png", "data/tilesets/test.rrpgts", 16);
+    bool is_tileset_loaded = false;
+    RRPG_TileSet tileset = (RRPG_TileSet){0};
     int mode = MODE_SELECTION;
     RRPG_Vector2Grid tile_selected = (RRPG_Vector2Grid){-1, -1};
     
     while(!WindowShouldClose()) {
         RRPG_render_adjust_mouse(CAMW, CAMH);
-
-        mouse_gestures(&camera, tileset);
-
-        
-        if(IsKeyPressed(KEY_ONE)) {
-            mode = MODE_CREATION;
-        } else if (IsKeyPressed(KEY_TWO)) {
-            mode = MODE_SELECTION;
-        }
-        BeginTextureMode(target);
+        if(!is_tileset_loaded) {
+            BeginTextureMode(target);
             ClearBackground(RAYWHITE);
-            GuiToggleGroup((Rectangle){CAMW - 300, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
-            BeginMode2D(camera);
-                RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
-            EndMode2D();
-            tile_panel(tileset, tile_selected);
-        EndTextureMode();
+                Vector2 size = (Vector2){200.0f, 100.0f,};
+                Vector2 screen_center = (Vector2){CAMW / 2, CAMH / 2};
+                Rectangle rect1 = (Rectangle){screen_center.x - size.x, screen_center.y - size.y / 2, size.x, size.y};
+                Rectangle rect2 = (Rectangle){screen_center.x, screen_center.y - size.y / 2, size.x, size.y};
+                enum {CREATE, LOAD};
+                static int m = CREATE;
+                static char *crt = "create";
+                static char *lot = "load";
+                bool cr = GuiButton(rect1, crt);
+                bool lo = GuiButton(rect2, lot);
+                if(cr) {
+                  m = CREATE; 
+                  crt = "create [selected]";
+                  lot = "load";
+                } else if (lo) {
+                  m = LOAD;
+                  crt = "create";
+                  lot = "load [selected]";
+                }
+                
+                char tpcr[]  = "Type path to .png file (relative to executable)";
+                char tplo[]  = "Type path to .rrpgts file (relative to executable)";
+                char *text_to_draw = NULL;
+                if(m == CREATE) {
+                    text_to_draw = tpcr;
+                }else if (m == LOAD) {
+                    text_to_draw = tplo;
+                }
+                float w = MeasureText(text_to_draw, 20);
+                DrawText(text_to_draw, screen_center.x - w/2, screen_center.y + 150, 20, BLACK);
+                Rectangle ptb_rect = (Rectangle){screen_center.x - 300, screen_center.y + 200, 600, 40};
+                static char in[300]  = "";
+                GuiTextBox(ptb_rect, in, sizeof(in), true);
+                Rectangle sub_rect = (Rectangle){screen_center.x - 50, screen_center.y + 250, 100, 50};
+                if(GuiButton(sub_rect, "SUBMIT")) {
+                    if(m == CREATE) {
+                        tileset = RRPGTM_create_tileset_from_atlas(in, NULL, 16 );
+                        is_tileset_loaded = true; 
+                    } else if(m == LOAD) {
+                        bool success = false;
+                        RRPGTM_load_tileset("data/tilesets/test.rrpgts", &success);
+                        if(success)
+                            is_tileset_loaded = true;
+                    }
+                }
+           EndTextureMode();
+                
+        } else {
+            mouse_gestures(&camera, tileset);
+            
+            if(IsKeyPressed(KEY_ONE)) {
+                mode = MODE_CREATION;
+            } else if (IsKeyPressed(KEY_TWO)) {
+                mode = MODE_SELECTION;
+            }
+            BeginTextureMode(target);
+                ClearBackground(RAYWHITE);
+                GuiToggleGroup((Rectangle){CAMW - 300, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
+                BeginMode2D(camera);
+                    RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
+                EndMode2D();
+                tile_panel(tileset, tile_selected);
+            EndTextureMode();
 
+        }
         RRPG_draw_to_screen(CAMW, CAMH, &target);
-    }
+        }
     RRPGTM_save_tileset(tileset);
     RRPG_end(&target);
 }
