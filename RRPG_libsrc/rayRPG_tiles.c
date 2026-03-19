@@ -34,21 +34,58 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
     int cur_work_idx = -1;
     char buf[100];
     RRPG_TileSet tileset = (RRPG_TileSet){0};
+    tileset.tileset_path = tileset_path;
     while(fgets(buf, 100, fptr)) {
         if(ferror(fptr)) {
             *success = false;
             return (RRPG_TileSet){0};
         }
         char *tok = strtok(buf, " ");
+        if(strcmp(tok, "TILE") == 0) {
+            ++tileset.count;
+            ++cur_work_idx;
+            continue;
+        }
         void *o = NULL;
+        enum {
+            TILE_SIZE,
+            PATH,
+            T_POS,
+            T_CAN_PASS
+        };
+        int token_type = -1;
+        int token_idx = -1;
         while(tok != NULL) {
-           if(o == NULL) {
-           if(strcmp(tok, "TILE_SIZE")) {
-                o = &tileset.tile_size;
-           }
+           ++token_idx;
+           if(token_type < 0) {
+               if(cur_work_idx < 0) {
+                   if(strcmp(tok, "TILE_SIZE") == 0) {
+                        token_type = TILE_SIZE;
+                   } else if (strcmp(tok, "PATH") == 0) {
+                        token_type = PATH; 
+                   }
+               } else {
+                  if(strcmp(tok, "POS") == 0) {
+                    token_type = T_POS;
+                  } else if(strcmp(tok, "CAN_PASS") == 0) {
+                    token_type = T_CAN_PASS;
+                  }                    
+               }
+           } else {
+                switch (token_type) {
+                    case TILE_SIZE:
+                        tileset.tile_size = 
+                    break;
+                    case PATH:
+                    break;
+                    case T_POS:
+                    break;
+                    case T_CAN_PASS:
+                    break;
+                }
            
-           } 
-            tok = strtok(NULL, " ");
+           }
+           tok = strtok(NULL, " ");
         }
     }
     *success = true;
@@ -63,7 +100,7 @@ bool RRPGTM_save_tileset(RRPG_TileSet tileset){
     fprintf(fptr, "PATH %s\n", tileset.atlas_path);
     for(int i = 0; i < tileset.count; ++i) {
         RRPG_Tile *tile = &(tileset.tiles[i]);
-        fprintf(fptr, "IDX %i\n", i);
+        fprintf(fptr, "TILE");
         fprintf(fptr, "POS %i %i\n", tile->tile_position.x, tile->tile_position.y);
         fprintf(fptr, "CAN_PASS %i\n", (tile->entities_can_pass ? 1 : 0));        
     }
