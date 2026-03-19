@@ -1,10 +1,10 @@
 CC = gcc
 CFLAGS = -Iinclude -Wall -Wextra $(shell pkg-config --cflags raylib)
-LIBS = $(shell pkg-config --libs raylib) -Llib -lrayrpg -lopengl32 -lgdi32 -lwinmm
+LIBS = $(shell pkg-config --libs raylib) -Llib -lrayrpg -lopengl32 -lgdi32 -lwinmm -lcomdlg32
 
 
 SRC = src/main.o src/npc.o
-TILEMAKER_SRC = src/tilemaker.o
+TILEMAKER_SRC = src/tilemaker.o src/sfd.c
 LIBSRC = RRPG_libsrc
 LIB_NAME = librayrpg.a
 LIB_OBJS = $(patsubst $(LIBSRC)/%.c, $(LIBSRC)/%.o, $(wildcard $(LIBSRC)/*.c))

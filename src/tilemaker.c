@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "rayRPG_boilerplate.h"
 #include "rayRPG_tiles.h"
-
+#include "sfd.h"
 #define RAYGUI_IMPLEMENTATION
 
 #pragma GCC diagnostic push
@@ -75,6 +75,7 @@ int main() {
                 char tpcr[]  = "Type path to .png file (relative to executable)";
                 char tplo[]  = "Type path to .rrpgts file (relative to executable)";
                 char *text_to_draw = NULL;
+//               static char in[300]  = "";
                 if(m == CREATE) {
                     text_to_draw = tpcr;
                 }else if (m == LOAD) {
@@ -83,16 +84,19 @@ int main() {
                 float w = MeasureText(text_to_draw, 20);
                 DrawText(text_to_draw, screen_center.x - w/2, screen_center.y + 150, 20, BLACK);
                 Rectangle ptb_rect = (Rectangle){screen_center.x - 300, screen_center.y + 200, 600, 40};
-                static char in[300]  = "";
-                GuiTextBox(ptb_rect, in, sizeof(in), true);
                 Rectangle sub_rect = (Rectangle){screen_center.x - 50, screen_center.y + 250, 100, 50};
+//                GuiTextBox(ptb_rect, in, sizeof(in), true);
                 if(GuiButton(sub_rect, "SUBMIT")) {
                     if(m == CREATE) {
+                        sfd_Options opt = {.filter = "*.rrpgts"};
+                        const char *in = sfd_open_dialog(&opt);
                         tileset = RRPGTM_create_tileset_from_atlas(in, NULL, 16 );
                         is_tileset_loaded = true; 
                     } else if(m == LOAD) {
+                        sfd_Options opt = {.filter = "*.rrpgts"};
+                        const char *in = sfd_open_dialog(&opt);
                         bool success = false;
-                        RRPGTM_load_tileset("data/tilesets/test.rrpgts", &success);
+                        RRPGTM_load_tileset(in, &success);
                         if(success)
                             is_tileset_loaded = true;
                     }

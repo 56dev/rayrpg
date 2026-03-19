@@ -44,6 +44,7 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
         if(strcmp(tok, "TILE") == 0) {
             ++tileset.count;
             ++cur_work_idx;
+            RRPGTM_add_tile_to_tileset(&tileset, (RRPG_Vector2Grid){-1, -1});
             continue;
         }
         void *o = NULL;
@@ -74,13 +75,23 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
            } else {
                 switch (token_type) {
                     case TILE_SIZE:
-                        tileset.tile_size = 
+                        tileset.tile_size = atoi(tok);
                     break;
                     case PATH:
+                        tileset.atlas_path = strdup(tok);
+                        if(tileset.atlas_path == NULL) {
+                            *success = false;
+                            return tileset;
+                        }
                     break;
                     case T_POS:
+                        if(token_idx == 1) tileset.tiles[cur_work_idx].tile_position.x = atoi(tok);
+                        else if(token_idx == 2) tileset.tiles[cur_work_idx].tile_position.y = atoi(tok);
                     break;
                     case T_CAN_PASS:
+                        int i = atoi(tok);
+                        if(i == 0) tileset.tiles[cur_work_idx].entities_can_pass = false;
+                        else tileset.tiles[cur_work_idx].entities_can_pass = true;
                     break;
                 }
            
@@ -89,6 +100,7 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
         }
     }
     *success = true;
+    return tileset;
 }
 bool RRPGTM_save_tileset(RRPG_TileSet tileset){
     FILE *fptr = fopen(tileset.tileset_path, "w");
