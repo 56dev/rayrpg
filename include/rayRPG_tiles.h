@@ -35,7 +35,7 @@ Texture2D RRPGTM_load_atlas(
 RRPG_TileSet RRPGTM_create_tileset_from_atlas(
     const char *atlas_path, 
     const char *tileset_path, 
-    int tile_size);
+    int tile_size, bool *success);
 void RRPGTM_add_tile_to_tileset(RRPG_TileSet *tileset, RRPG_Vector2Grid tile_position);
 int RRPGTM_find_position_in_tileset(RRPG_TileSet tileset, RRPG_Vector2Grid tile_position);
 bool RRPGTM_save_tileset(RRPG_TileSet tileset);

@@ -92,8 +92,11 @@ int main() {
                         sfd_Options opt = {.filter = "*.png"};
                         const char *in = sfd_open_dialog(&opt);
                         if(in != NULL){
-                            tileset = RRPGTM_create_tileset_from_atlas(in, NULL, 16 );
-                            is_tileset_loaded = true; 
+                            bool success = false;
+                            tileset = RRPGTM_create_tileset_from_atlas(in, NULL, 16, &success);
+                            if(success) {
+                                is_tileset_loaded = true; 
+                            }
                         }
                    } else if(m == LOAD) {
                         sfd_Options opt = {.filter = "*.rrpgts"};
@@ -102,7 +105,6 @@ int main() {
                             bool success = false;
                             tileset = RRPGTM_load_tileset(in, &success);
                             if(success) {
-                                TraceLog(LOG_INFO, "%s", tileset.atlas_path);
                                 is_tileset_loaded = true;
                             }
                         }

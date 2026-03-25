@@ -13,17 +13,26 @@ Texture2D RRPGTM_load_atlas(const char *path) {
     return tex;
 }
 
-RRPG_TileSet RRPGTM_create_tileset_from_atlas(const char *atlas_path, const char *tileset_path, int tile_size) {
-    return (RRPG_TileSet) {
+RRPG_TileSet RRPGTM_create_tileset_from_atlas(const char *atlas_path, const char *tileset_path, int tile_size, bool *success) {
+    RRPG_TileSet ts = (RRPG_TileSet) {
         .atlas_path = atlas_path,
         .tileset_path = tileset_path,
         .tile_size = tile_size,
-        .atlas = RRPGTM_load_atlas(atlas_path),
         .count = 0,
-        .tiles = MemAlloc(sizeof(RRPG_Tile)),
-        
-        .xxprv_capacity = sizeof(RRPG_Tile),
     };
+    ts.atlas = RRPGTM_load_atlas(atlas_path);
+    if(ts.atlas.id <= 0) {
+        *success = false;
+        return ts;
+    }
+    ts.tiles = malloc(sizeof(RRPG_Tile));
+    ts.xxprv_capacity = sizeof(RRPG_Tile);
+    if(ts.tiles == NULL) {
+        *success = false;
+        return ts;
+    }
+    *success = true;
+    return ts;
 }
 RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
     FILE *fptr = fopen(tileset_path, "r");
