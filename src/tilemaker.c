@@ -42,16 +42,17 @@ int main() {
         TEXTURE_FILTER_POINT,
         &target
     );
+    TraceLog(LOG_INFO, "%s", GetWorkingDirectory());
+    TraceLog(LOG_INFO, "%s", GetApplicationDirectory());
     bool is_tileset_loaded = false;
     RRPG_TileSet tileset = (RRPG_TileSet){0};
     int mode = MODE_SELECTION;
     RRPG_Vector2Grid tile_selected = (RRPG_Vector2Grid){-1, -1};
-    
     while(!WindowShouldClose()) {
         RRPG_render_adjust_mouse(CAMW, CAMH);
+        BeginTextureMode(target);
+        ClearBackground(RAYWHITE);
         if(!is_tileset_loaded) {
-            BeginTextureMode(target);
-            ClearBackground(RAYWHITE);
                 Vector2 size = (Vector2){200.0f, 100.0f,};
                 Vector2 screen_center = (Vector2){CAMW / 2, CAMH / 2};
                 Rectangle rect1 = (Rectangle){screen_center.x - size.x, screen_center.y - size.y / 2, size.x, size.y};
@@ -86,22 +87,27 @@ int main() {
                 Rectangle ptb_rect = (Rectangle){screen_center.x - 300, screen_center.y + 200, 600, 40};
                 Rectangle sub_rect = (Rectangle){screen_center.x - 50, screen_center.y + 250, 100, 50};
 //                GuiTextBox(ptb_rect, in, sizeof(in), true);
-                if(GuiButton(sub_rect, "SUBMIT")) {
+                if(GuiButton(sub_rect, "SELECT FILE")) {
                     if(m == CREATE) {
+                        sfd_Options opt = {.filter = "*.png"};
+                        const char *in = sfd_open_dialog(&opt);
+                        if(in != NULL){
+                            tileset = RRPGTM_create_tileset_from_atlas(in, NULL, 16 );
+                            is_tileset_loaded = true; 
+                        }
+                   } else if(m == LOAD) {
                         sfd_Options opt = {.filter = "*.rrpgts"};
                         const char *in = sfd_open_dialog(&opt);
-                        tileset = RRPGTM_create_tileset_from_atlas(in, NULL, 16 );
-                        is_tileset_loaded = true; 
-                    } else if(m == LOAD) {
-                        sfd_Options opt = {.filter = "*.rrpgts"};
-                        const char *in = sfd_open_dialog(&opt);
-                        bool success = false;
-                        RRPGTM_load_tileset(in, &success);
-                        if(success)
-                            is_tileset_loaded = true;
+                        if(in != NULL){
+                            bool success = false;
+                            tileset = RRPGTM_load_tileset(in, &success);
+                            if(success) {
+                                TraceLog(LOG_INFO, "%s", tileset.atlas_path);
+                                is_tileset_loaded = true;
+                            }
+                        }
                     }
                 }
-           EndTextureMode();
                 
         } else {
             mouse_gestures(&camera, tileset);
@@ -111,20 +117,20 @@ int main() {
             } else if (IsKeyPressed(KEY_TWO)) {
                 mode = MODE_SELECTION;
             }
-            BeginTextureMode(target);
-                ClearBackground(RAYWHITE);
-                GuiToggleGroup((Rectangle){CAMW - 300, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
-                BeginMode2D(camera);
-                    RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
-                EndMode2D();
-                tile_panel(tileset, tile_selected);
-            EndTextureMode();
+            ClearBackground(RAYWHITE);
+            GuiToggleGroup((Rectangle){CAMW - 300, 0, 100, 100}, "CREATE TILE;SELECT TILE;DELETE TILE", &mode);
+            BeginMode2D(camera);
+            RRPGTM_display_tileset(&tileset, 16, camera, mode, &tile_selected);
+            EndMode2D();
+            tile_panel(tileset, tile_selected);
 
         }
+        EndTextureMode();
         RRPG_draw_to_screen(CAMW, CAMH, &target);
-        }
-    RRPGTM_save_tileset(tileset);
+    }
+//    RRPGTM_save_tileset(tileset);
     RRPG_end(&target);
+    return 0;
 }
 
 void mouse_gestures(Camera2D *camera, RRPG_TileSet tileset) {

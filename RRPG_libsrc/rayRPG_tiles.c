@@ -83,6 +83,8 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
                             *success = false;
                             return tileset;
                         }
+                        tileset.atlas = RRPGTM_load_atlas(tileset.atlas_path);
+
                     break;
                     case T_POS:
                         if(token_idx == 1) tileset.tiles[cur_work_idx].tile_position.x = atoi(tok);
@@ -96,7 +98,7 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
                 }
            
            }
-           tok = strtok(NULL, " ");
+           tok = strtok(NULL, " \n");
         }
     }
     *success = true;
