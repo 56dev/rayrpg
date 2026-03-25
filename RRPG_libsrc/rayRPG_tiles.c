@@ -114,6 +114,14 @@ RRPG_TileSet RRPGTM_load_tileset(const char *tileset_path, bool *success) {
     return tileset;
 }
 bool RRPGTM_save_tileset(RRPG_TileSet tileset){
+    if(tileset.tileset_path == NULL) {
+        sfd_Options opt = {.filter = "*.rrpgts"};
+        const char *in = sfd_open_dialog(&opt); 
+        if(in == NULL) {
+            return false;
+        }
+        tileset.tileset_path = in;
+    }
     FILE *fptr = fopen(tileset.tileset_path, "w");
     if(!fptr) {
         return false;
